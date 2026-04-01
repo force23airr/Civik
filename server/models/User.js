@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'moderator', 'admin', 'police_officer'],
+    enum: ['user', 'moderator', 'admin', 'police_officer', 'municipal_worker'],
     default: 'user'
   },
 
@@ -131,6 +131,17 @@ const userSchema = new mongoose.Schema({
         default: 0
       }
     },
+    isActive: {
+      type: Boolean,
+      default: true
+    }
+  },
+  municipalProfile: {
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'MunicipalDepartment'
+    },
+    title: String,
     isActive: {
       type: Boolean,
       default: true

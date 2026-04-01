@@ -7,6 +7,7 @@ import {
   detectPlatesFromVideo
 } from '../services/plateRecognition/plateDetector.js';
 import { awardIncidentCredits } from '../services/rewards/rewardService.js';
+import { routeIncident } from '../services/municipal/routingService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -143,6 +144,11 @@ export const createIncident = async (req, res) => {
     // Award credits for incident creation (runs in background)
     awardIncidentCredits(incident, req.user._id).catch(err =>
       console.error('[Rewards] Error awarding incident credits:', err)
+    );
+
+    // Auto-route infrastructure/weather/traffic incidents to municipal departments
+    routeIncident(incident).catch(err =>
+      console.error('[Municipal] Routing error:', err.message)
     );
 
     res.status(201).json(incident);

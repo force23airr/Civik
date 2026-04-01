@@ -199,7 +199,15 @@ const incidentSchema = new mongoose.Schema({
   witnessCount: {
     type: Number,
     default: 0
-  }
+  },
+  // Municipal routing results (auto-populated after creation)
+  municipalReports: [{
+    department: { type: mongoose.Schema.Types.ObjectId, ref: 'MunicipalDepartment' },
+    reportId: { type: mongoose.Schema.Types.ObjectId, ref: 'MunicipalReport' },
+    submittedAt: { type: Date, default: Date.now },
+    status: { type: String, default: 'submitted' },
+    ticketNumber: String
+  }]
 }, {
   timestamps: true
 });

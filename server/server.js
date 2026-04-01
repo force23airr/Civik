@@ -22,10 +22,12 @@ import rewardRoutes from './routes/rewards.js';
 import partnerRoutes from './routes/partners.js';
 import violationRoutes from './routes/violations.js';
 import parkingViolationRoutes from './routes/parkingViolations.js';
+import municipalRoutes from './routes/municipal.js';
 
 // Models for seeding
 import InsurancePartner from './models/InsurancePartner.js';
 import DataPartner from './models/DataPartner.js';
+import MunicipalDepartment from './models/MunicipalDepartment.js';
 
 dotenv.config();
 
@@ -77,6 +79,7 @@ app.use('/api/rewards', rewardRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/violations', violationRoutes);
 app.use('/api/parking-violations', parkingViolationRoutes);
+app.use('/api/municipal', municipalRoutes);
 
 // External API routes (v1)
 app.use('/api/v1/insurance', insuranceApiRouter);
@@ -112,6 +115,7 @@ httpServer.listen(PORT, async () => {
   try {
     await InsurancePartner.seedDefaults();
     await DataPartner.seedDefaults();
+    await MunicipalDepartment.seedDefaults();
   } catch (error) {
     console.error('Error seeding partners:', error.message);
   }
