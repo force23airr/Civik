@@ -8,7 +8,8 @@ import {
   getReportStatus,
   workerGetQueue,
   workerUpdateReport,
-  workerGetStats
+  workerGetStats,
+  getJurisdictions
 } from '../controllers/municipalController.js';
 
 const router = express.Router();
@@ -19,6 +20,9 @@ router.get('/departments', getDepartments);
 
 // Find departments near a location
 router.get('/nearby', getDepartmentsNearby);
+
+// Get counties and cities for a state (for manual location picker)
+router.get('/jurisdictions', getJurisdictions);
 
 // Preview which dept an incident would be routed to
 router.get('/lookup', lookupDepartment);

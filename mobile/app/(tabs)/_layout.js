@@ -59,6 +59,14 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="report-infrastructure"
+        options={{
+          title: 'Report Issue',
+          tabBarIcon: ({ color, size }) => <Ionicons name="warning-outline" size={size} color={color} />,
+          tabBarActiveTintColor: '#f59e0b'
+        }}
+      />
+      <Tabs.Screen
         name="my-reports"
         options={{
           title: 'My Reports',

@@ -323,6 +323,240 @@ export const workerGetStats = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/municipal/jurisdictions?state=FL&country=US
+ * Returns a structured list of counties and cities for the picker UI.
+ * Derives from seeded MunicipalDepartment data + static county map.
+ */
+export const getJurisdictions = async (req, res) => {
+  try {
+    const { state, country = 'US' } = req.query;
+
+    // Pull distinct cities we have departments for
+    const query = { isActive: true, 'municipality.country': country };
+    if (state) query['municipality.state'] = state.toUpperCase();
+
+    const depts = await MunicipalDepartment.find(query)
+      .select('municipality.city municipality.state jurisdiction.cities')
+      .lean();
+
+    // Build city set from both municipality.city and jurisdiction.cities
+    const citySet = new Set();
+    for (const d of depts) {
+      if (d.municipality?.city) citySet.add(d.municipality.city);
+      for (const c of d.jurisdiction?.cities || []) {
+        if (c) citySet.add(c.charAt(0).toUpperCase() + c.slice(1).toLowerCase()
+          .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+      }
+    }
+
+    // For Florida, return the full county → cities hierarchy
+    if (!state || state.toUpperCase() === 'FL') {
+      return res.json({
+        state: 'FL',
+        country: 'US',
+        counties: FLORIDA_COUNTIES,
+        connectedCities: Array.from(citySet).sort()
+      });
+    }
+
+    // For other states, return a flat city list grouped by state
+    res.json({
+      state: state?.toUpperCase(),
+      country,
+      counties: [],
+      connectedCities: Array.from(citySet).sort()
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Florida counties with incorporated cities/towns
+const FLORIDA_COUNTIES = [
+  {
+    name: 'Miami-Dade County',
+    code: 'miami-dade',
+    cities: [
+      'Aventura', 'Bal Harbour', 'Bay Harbor Islands', 'Biscayne Park',
+      'Coral Gables', 'Cutler Bay', 'Doral', 'El Portal', 'Florida City',
+      'Golden Beach', 'Hialeah', 'Hialeah Gardens', 'Homestead',
+      'Indian Creek Village', 'Key Biscayne', 'Medley', 'Miami',
+      'Miami Beach', 'Miami Gardens', 'Miami Lakes', 'Miami Shores',
+      'Miami Springs', 'North Bay Village', 'North Miami', 'North Miami Beach',
+      'Opa-locka', 'Palmetto Bay', 'Pinecrest', 'South Miami',
+      'Sunny Isles Beach', 'Surfside', 'Sweetwater', 'Virginia Gardens',
+      'West Miami', 'Unincorporated Miami-Dade'
+    ]
+  },
+  {
+    name: 'Broward County',
+    code: 'broward',
+    cities: [
+      'Coconut Creek', 'Cooper City', 'Coral Springs', 'Dania Beach',
+      'Davie', 'Deerfield Beach', 'Fort Lauderdale', 'Hallandale Beach',
+      'Hillsboro Beach', 'Hollywood', 'Lauderdale Lakes', 'Lauderdale-by-the-Sea',
+      'Lauderhill', 'Lazy Lake', 'Lighthouse Point', 'Margate', 'Miramar',
+      'North Lauderdale', 'Oakland Park', 'Parkland', 'Pembroke Park',
+      'Pembroke Pines', 'Plantation', 'Pompano Beach', 'Sea Ranch Lakes',
+      'Southwest Ranches', 'Sunrise', 'Tamarac', 'Weston', 'Wilton Manors',
+      'Unincorporated Broward'
+    ]
+  },
+  {
+    name: 'Palm Beach County',
+    code: 'palm-beach',
+    cities: [
+      'Atlantis', 'Belle Glade', 'Boca Raton', 'Boynton Beach', 'Briny Breezes',
+      'Cloud Lake', 'Delray Beach', 'Glen Ridge', 'Golf', 'Greenacres',
+      'Gulf Stream', 'Haverhill', 'Highland Beach', 'Hypoluxo', 'Juno Beach',
+      'Jupiter', 'Jupiter Inlet Colony', 'Lake Clarke Shores', 'Lake Park',
+      'Lake Worth Beach', 'Lantana', 'Loxahatchee Groves', 'Manalapan',
+      'Mangonia Park', 'North Palm Beach', 'Ocean Ridge', 'Pahokee',
+      'Palm Beach', 'Palm Beach Gardens', 'Palm Beach Shores', 'Palm Springs',
+      'Riviera Beach', 'Royal Palm Beach', 'South Bay', 'South Palm Beach',
+      'Tequesta', 'Wellington', 'West Palm Beach', 'Westlake',
+      'Unincorporated Palm Beach'
+    ]
+  },
+  {
+    name: 'Orange County',
+    code: 'orange',
+    cities: [
+      'Apopka', 'Bay Lake', 'Belle Isle', 'Eatonville', 'Edgewood',
+      'Lake Buena Vista', 'Maitland', 'Oakland', 'Ocoee', 'Orlando',
+      'Winter Garden', 'Winter Park', 'Windermere',
+      'Unincorporated Orange County'
+    ]
+  },
+  {
+    name: 'Hillsborough County',
+    code: 'hillsborough',
+    cities: [
+      'Plant City', 'Tampa', 'Temple Terrace',
+      'Unincorporated Hillsborough'
+    ]
+  },
+  {
+    name: 'Pinellas County',
+    code: 'pinellas',
+    cities: [
+      'Belleair', 'Belleair Beach', 'Belleair Bluffs', 'Belleair Shore',
+      'Clearwater', 'Dunedin', 'Gulfport', 'Indian Rocks Beach',
+      'Indian Shores', 'Kenneth City', 'Largo', 'Madeira Beach',
+      'North Redington Beach', 'Oldsmar', 'Pinellas Park', 'Redington Beach',
+      'Redington Shores', 'Safety Harbor', 'St. Pete Beach', 'St. Petersburg',
+      'Seminole', 'South Pasadena', 'Tarpon Springs', 'Treasure Island',
+      'Unincorporated Pinellas'
+    ]
+  },
+  {
+    name: 'Duval County',
+    code: 'duval',
+    cities: [
+      'Atlantic Beach', 'Baldwin', 'Jacksonville', 'Jacksonville Beach',
+      'Neptune Beach', 'Unincorporated Duval'
+    ]
+  },
+  {
+    name: 'Seminole County',
+    code: 'seminole',
+    cities: [
+      'Altamonte Springs', 'Casselberry', 'Lake Mary', 'Longwood',
+      'Oviedo', 'Sanford', 'Winter Springs', 'Unincorporated Seminole'
+    ]
+  },
+  {
+    name: 'Osceola County',
+    code: 'osceola',
+    cities: [
+      'Kissimmee', 'St. Cloud', 'Unincorporated Osceola'
+    ]
+  },
+  {
+    name: 'Volusia County',
+    code: 'volusia',
+    cities: [
+      'Daytona Beach', 'Daytona Beach Shores', 'DeBary', 'DeLand',
+      'Deltona', 'Edgewater', 'Holly Hill', 'Lake Helen', 'New Smyrna Beach',
+      'Oak Hill', 'Orange City', 'Ormond Beach', 'Pierson', 'Port Orange',
+      'South Daytona', 'Unincorporated Volusia'
+    ]
+  },
+  {
+    name: 'Lee County',
+    code: 'lee',
+    cities: [
+      'Bonita Springs', 'Cape Coral', 'Fort Myers', 'Fort Myers Beach',
+      'Sanibel', 'Unincorporated Lee'
+    ]
+  },
+  {
+    name: 'Collier County',
+    code: 'collier',
+    cities: [
+      'Everglades City', 'Marco Island', 'Naples', 'Unincorporated Collier'
+    ]
+  },
+  {
+    name: 'Manatee County',
+    code: 'manatee',
+    cities: [
+      'Anna Maria', 'Bradenton', 'Bradenton Beach', 'Holmes Beach',
+      'Palmetto', 'Unincorporated Manatee'
+    ]
+  },
+  {
+    name: 'Sarasota County',
+    code: 'sarasota',
+    cities: [
+      'Longboat Key', 'North Port', 'Sarasota', 'Venice',
+      'Unincorporated Sarasota'
+    ]
+  },
+  {
+    name: 'Polk County',
+    code: 'polk',
+    cities: [
+      'Auburndale', 'Bartow', 'Davenport', 'Dundee', 'Eagle Lake',
+      'Fort Meade', 'Frostproof', 'Haines City', 'Lake Alfred', 'Lake Hamilton',
+      'Lake Wales', 'Lakeland', 'Mulberry', 'Polk City', 'Winter Haven',
+      'Unincorporated Polk'
+    ]
+  },
+  {
+    name: 'Brevard County',
+    code: 'brevard',
+    cities: [
+      'Cape Canaveral', 'Cocoa', 'Cocoa Beach', 'Indialantic', 'Indian Harbour Beach',
+      'Melbourne', 'Melbourne Beach', 'Palm Bay', 'Rockledge', 'Satellite Beach',
+      'Titusville', 'West Melbourne', 'Unincorporated Brevard'
+    ]
+  },
+  {
+    name: 'Pasco County',
+    code: 'pasco',
+    cities: [
+      'Dade City', 'New Port Richey', 'Port Richey', 'San Antonio',
+      'St. Leo', 'Zephyrhills', 'Unincorporated Pasco'
+    ]
+  },
+  {
+    name: 'Escambia County',
+    code: 'escambia',
+    cities: [
+      'Century', 'Pensacola', 'Unincorporated Escambia'
+    ]
+  },
+  {
+    name: 'Leon County',
+    code: 'leon',
+    cities: [
+      'Tallahassee', 'Unincorporated Leon'
+    ]
+  }
+];
+
 function haversine(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
