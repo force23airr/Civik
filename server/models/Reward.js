@@ -24,6 +24,7 @@ const rewardSchema = new mongoose.Schema({
       'police_report',          // Bonus for sending to police
       'insurance_claim',        // Bonus for filing claim
       'community_verification', // Upvotes/verifications from community
+      'parking_violation_approved', // Bounty for approved parking violation report
       'payout_redemption',      // Negative entry for cash-out
       'adjustment'              // Admin adjustments
     ],
@@ -47,7 +48,7 @@ const rewardSchema = new mongoose.Schema({
   source: {
     entityType: {
       type: String,
-      enum: ['incident', 'dataset', 'referral', 'payout', 'police_report', 'insurance_claim', 'system']
+      enum: ['incident', 'dataset', 'referral', 'payout', 'police_report', 'insurance_claim', 'parking_violation', 'system']
     },
     entityId: mongoose.Schema.Types.ObjectId
   },

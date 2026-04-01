@@ -21,6 +21,7 @@ import plateRoutes from './routes/plates.js';
 import rewardRoutes from './routes/rewards.js';
 import partnerRoutes from './routes/partners.js';
 import violationRoutes from './routes/violations.js';
+import parkingViolationRoutes from './routes/parkingViolations.js';
 
 // Models for seeding
 import InsurancePartner from './models/InsurancePartner.js';
@@ -75,6 +76,7 @@ app.use('/api/plates', plateRoutes);
 app.use('/api/rewards', rewardRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/violations', violationRoutes);
+app.use('/api/parking-violations', parkingViolationRoutes);
 
 // External API routes (v1)
 app.use('/api/v1/insurance', insuranceApiRouter);

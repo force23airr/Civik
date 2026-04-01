@@ -7,6 +7,11 @@ import {
   getDepartmentStats,
   exportEvidence
 } from '../controllers/policePortalController.js';
+import {
+  getParkingQueue,
+  getParkingCaseDetail,
+  reviewParkingViolation
+} from '../controllers/parkingPortalController.js';
 import { requirePoliceOfficer, requirePortalAdmin } from '../middleware/policeAuth.js';
 
 const router = express.Router();
@@ -25,6 +30,11 @@ router.get('/cases/:caseId/evidence/export', exportEvidence);
 
 // Department stats
 router.get('/stats', getDepartmentStats);
+
+// Parking violation management
+router.get('/parking', getParkingQueue);
+router.get('/parking/:id', getParkingCaseDetail);
+router.put('/parking/:id/review', reviewParkingViolation);
 
 // Portal admin routes (e.g., manage officers)
 // router.post('/officers', requirePortalAdmin, addOfficer);

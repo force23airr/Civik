@@ -47,6 +47,30 @@ export const REWARD_VALUES = {
     insurance_claim: 30
   },
 
+  // Parking violation bounties (paid when police approve)
+  parking_violation_bounty: {
+    fire_hydrant: 500,        // $5
+    handicap_zone: 750,       // $7.50
+    no_parking_zone: 250,     // $2.50
+    double_parked: 300,       // $3
+    blocking_driveway: 400,   // $4
+    blocking_crosswalk: 500,  // $5
+    blocking_bike_lane: 300,  // $3
+    blocking_sidewalk: 300,   // $3
+    expired_meter: 100,       // $1
+    overnight_parking: 100,   // $1
+    street_cleaning: 150,     // $1.50
+    fire_lane: 750,           // $7.50
+    bus_stop: 400,            // $4
+    loading_zone: 150,        // $1.50
+    red_curb: 250,            // $2.50
+    yellow_curb: 150,         // $1.50
+    too_close_to_intersection: 300, // $3
+    wrong_direction: 200,     // $2
+    abandoned_vehicle: 500,   // $5
+    other: 200                // $2
+  },
+
   // Referral rewards
   referral: {
     referrer_bonus: 500,    // $5 for referrer
@@ -368,6 +392,46 @@ export async function checkTierUpgrade(userId) {
 }
 
 /**
+ * Award bounty for an approved parking violation report
+ */
+export async function awardParkingViolationBounty(parkingViolationId, userId, violationType) {
+  try {
+    const baseAmount = REWARD_VALUES.parking_violation_bounty[violationType] || 200;
+    const consent = await DataConsent.findOne({ user: userId });
+    const multiplier = consent?.tier?.multiplier || 1.0;
+    const finalAmount = Math.round(baseAmount * multiplier);
+
+    const reward = await Reward.create({
+      user: userId,
+      type: 'parking_violation_approved',
+      baseAmount,
+      amount: finalAmount,
+      finalAmount,
+      status: 'confirmed',
+      source: { entityType: 'parking_violation', entityId: parkingViolationId },
+      multipliers: [{ type: 'tier', value: multiplier, description: `${consent?.tier?.current || 'bronze'} tier` }],
+      description: `Bounty for approved parking violation report (${violationType.replace(/_/g, ' ')})`
+    });
+
+    await updateUserBalance(userId, finalAmount);
+
+    // Update tier tracking
+    if (consent) {
+      consent.tier.monthlyCredits = (consent.tier.monthlyCredits || 0) + finalAmount;
+      await consent.save();
+    }
+
+    await checkTierUpgrade(userId);
+
+    console.log(`[RewardService] Parking bounty awarded: ${finalAmount} credits to user ${userId}`);
+    return reward;
+  } catch (error) {
+    console.error('[RewardService] Error awarding parking violation bounty:', error);
+    throw error;
+  }
+}
+
+/**
  * Get leaderboard
  */
 export async function getLeaderboard(period = 'monthly', limit = 50) {
@@ -497,6 +561,7 @@ export default {
   awardIncidentCredits,
   awardPoliceReportBonus,
   awardInsuranceClaimBonus,
+  awardParkingViolationBounty,
   updateUserBalance,
   checkTierUpgrade,
   getLeaderboard,

@@ -34,6 +34,9 @@ const Navbar = () => {
               <Link to="/report">
                 Report Incident
               </Link>
+              <Link to="/report-parking" className="parking-link">
+                Report Parking
+              </Link>
               <Link to="/flagged-drivers" className="flagged-link">Flagged Drivers</Link>
               <div className="navbar-user">
                 <Link to="/profile" className="user-link">

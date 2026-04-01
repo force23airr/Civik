@@ -24,6 +24,8 @@ import ViolationDetail from './pages/ViolationDetail';
 import MyViolationReports from './pages/MyViolationReports';
 import PoliceLogin from './pages/PoliceLogin';
 import PoliceDashboard from './pages/PoliceDashboard';
+import ReportParkingViolation from './pages/ReportParkingViolation';
+import MyParkingReports from './pages/MyParkingReports';
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -173,6 +175,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyViolationReports />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Parking Violation Routes */}
+          <Route
+            path="/report-parking"
+            element={
+              <ProtectedRoute>
+                <ReportParkingViolation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-parking-reports"
+            element={
+              <ProtectedRoute>
+                <MyParkingReports />
               </ProtectedRoute>
             }
           />
