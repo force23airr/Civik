@@ -67,15 +67,18 @@ export const getIncidents = async (req, res) => {
     const { type, severity, status, limit = 20, page = 1 } = req.query;
 
     const query = {};
-    if (type) query.type = type;
-    if (severity) query.severity = severity;
-    if (status) query.status = status;
+    if (type && typeof type === 'string') query.type = type;
+    if (severity && typeof severity === 'string') query.severity = severity;
+    if (status && typeof status === 'string') query.status = status;
+
+    const safeLimit = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const safePage = Math.max(parseInt(page) || 1, 1);
 
     const incidents = await Incident.find(query)
       .populate('user', 'username avatar')
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .limit(safeLimit)
+      .skip((safePage - 1) * safeLimit);
 
     const total = await Incident.countDocuments(query);
 
@@ -122,13 +125,20 @@ export const createIncident = async (req, res) => {
       mimetype: file.mimetype
     })) : [];
 
+    let parsedLocation;
+    try {
+      parsedLocation = typeof location === 'string' ? JSON.parse(location) : location;
+    } catch {
+      return res.status(400).json({ message: 'Invalid location format' });
+    }
+
     const incident = await Incident.create({
       user: req.user._id,
       title,
       description,
       type,
       severity,
-      location: JSON.parse(location),
+      location: parsedLocation,
       mediaFiles
     });
 
@@ -180,7 +190,13 @@ export const updateIncident = async (req, res) => {
     if (type) updateFields.type = type;
     if (severity) updateFields.severity = severity;
     if (status) updateFields.status = status;
-    if (location) updateFields.location = JSON.parse(location);
+    if (location) {
+      try {
+        updateFields.location = typeof location === 'string' ? JSON.parse(location) : location;
+      } catch {
+        return res.status(400).json({ message: 'Invalid location format' });
+      }
+    }
 
     incident = await Incident.findByIdAndUpdate(
       req.params.id,

@@ -37,12 +37,10 @@ export const requirePoliceOfficer = async (req, res, next) => {
   }
 };
 
-// Verify officer is portal admin for their department
-export const requirePortalAdmin = async (req, res, next) => {
-  try {
-    // First verify they're a police officer
-    await requirePoliceOfficer(req, res, () => {});
-
+// Verify officer is portal admin — properly chains after requirePoliceOfficer
+export const requirePortalAdmin = [
+  requirePoliceOfficer,
+  (req, res, next) => {
     const isAdmin = req.department.portalAdmins.some(
       adminId => adminId.toString() === req.user._id.toString()
     );
@@ -52,7 +50,5 @@ export const requirePortalAdmin = async (req, res, next) => {
     }
 
     next();
-  } catch (error) {
-    res.status(403).json({ error: 'Portal admin verification failed' });
   }
-};
+];

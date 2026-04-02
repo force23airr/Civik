@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -46,10 +48,22 @@ const io = new Server(httpServer, {
 // Connect to MongoDB
 connectDB();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json({ limit: '10kb' }));
+app.use(mongoSanitize());
+
+// Static files — uploads only (reports/exports served through auth routes)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res) => {
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Content-Disposition', 'inline');
+  }
+}));
 
 // Make io accessible to routes
 app.set('io', io);
@@ -60,9 +74,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve reports and exports directories
-app.use('/reports', express.static(path.join(__dirname, 'reports')));
-app.use('/exports', express.static(path.join(__dirname, 'exports')));
+// Reports and exports served through authenticated routes only (not public static)
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -85,20 +97,32 @@ app.use('/api/municipal', municipalRoutes);
 app.use('/api/v1/insurance', insuranceApiRouter);
 app.use('/api/v1/marketplace', marketplaceApiRouter);
 
+// Socket.io authentication middleware
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error('Authentication required'));
+    const jwt = await import('jsonwebtoken');
+    const decoded = jwt.default.verify(token, process.env.JWT_SECRET);
+    socket.userId = decoded.userId;
+    next();
+  } catch (err) {
+    next(new Error('Invalid token'));
+  }
+});
+
 // Socket.io connection
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log('User connected:', socket.id, 'userId:', socket.userId);
 
   // Join violation report room for real-time updates
   socket.on('join-violation', (violationId) => {
     socket.join(`violation-${violationId}`);
-    console.log(`Socket ${socket.id} joined room: violation-${violationId}`);
   });
 
   // Leave violation report room
   socket.on('leave-violation', (violationId) => {
     socket.leave(`violation-${violationId}`);
-    console.log(`Socket ${socket.id} left room: violation-${violationId}`);
   });
 
   socket.on('disconnect', () => {

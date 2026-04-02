@@ -1,38 +1,46 @@
 import multer from 'multer';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configure storage
+// Strict allowlists
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.mov', '.avi']);
+const ALLOWED_MIMETYPES = new Set([
+  'image/jpeg', 'image/png', 'image/gif',
+  'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'
+]);
+
+// Configure storage with cryptographically random filenames
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../uploads'));
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const uniqueSuffix = crypto.randomUUID();
+    cb(null, uniqueSuffix + path.extname(file.originalname).toLowerCase());
   }
 });
 
-// File filter
+// Strict file filter — check both extension and mimetype against exact allowlists
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|mp4|webm|mov|avi/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mimeOk = ALLOWED_MIMETYPES.has(file.mimetype);
+  const extOk = ALLOWED_EXTENSIONS.has(ext);
 
-  if (extname && mimetype) {
+  if (extOk && mimeOk) {
     cb(null, true);
   } else {
-    cb(new Error('Only images and videos are allowed'), false);
+    cb(new Error('Only images (jpg, png, gif) and videos (mp4, webm, mov, avi) are allowed'), false);
   }
 };
 
 const upload = multer({
   storage,
   limits: {
-    fileSize: 100 * 1024 * 1024 // 100MB limit
+    fileSize: 50 * 1024 * 1024 // 50MB limit (reduced from 100MB)
   },
   fileFilter
 });

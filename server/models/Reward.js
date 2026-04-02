@@ -166,4 +166,10 @@ rewardSchema.methods.confirm = async function() {
   return this.save();
 };
 
+// Prevent duplicate rewards for the same entity + type (database-level guard)
+rewardSchema.index(
+  { 'source.entityId': 1, type: 1 },
+  { unique: true, partialFilterExpression: { 'source.entityId': { $exists: true } } }
+);
+
 export default mongoose.model('Reward', rewardSchema);

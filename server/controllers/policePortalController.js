@@ -4,6 +4,11 @@ import PoliceActivity from '../models/PoliceActivity.js';
 import User from '../models/User.js';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const UPLOADS_DIR = path.resolve(__dirname, '../uploads');
 
 // Get case queue for officer's department
 export const getCaseQueue = async (req, res) => {
@@ -107,6 +112,10 @@ export const streamVideo = async (req, res) => {
     }
 
     const videoPath = path.resolve(evidence.path);
+    // Prevent path traversal — ensure file is within uploads directory
+    if (!videoPath.startsWith(UPLOADS_DIR)) {
+      return res.status(403).json({ error: 'Invalid file path' });
+    }
     if (!fs.existsSync(videoPath)) {
       return res.status(404).json({ error: 'Video file not found on server' });
     }

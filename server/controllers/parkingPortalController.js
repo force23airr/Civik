@@ -10,10 +10,12 @@ export const getParkingQueue = async (req, res) => {
   try {
     const { status, page = 1, limit = 30 } = req.query;
     const departmentId = req.department._id;
+    const safeLimit = Math.min(Math.max(parseInt(limit) || 30, 1), 100);
+    const safePage = Math.max(parseInt(page) || 1, 1);
 
     const query = { assignedStation: departmentId };
 
-    if (status) {
+    if (status && typeof status === 'string') {
       query['review.status'] = status;
     } else {
       query['review.status'] = { $in: ['pending', 'under_review'] };
@@ -22,8 +24,8 @@ export const getParkingQueue = async (req, res) => {
     const cases = await ParkingViolation.find(query)
       .populate('reporter', 'username email')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
 
     const total = await ParkingViolation.countDocuments(query);
 
@@ -106,6 +108,16 @@ export const reviewParkingViolation = async (req, res) => {
 
     if (report.assignedStation.toString() !== req.department._id.toString()) {
       return res.status(403).json({ error: 'Case not in your jurisdiction' });
+    }
+
+    // Prevent self-approval — officer cannot review their own report
+    if (report.reporter.toString() === req.user._id.toString()) {
+      return res.status(403).json({ error: 'Cannot review your own report' });
+    }
+
+    // Prevent re-review of already decided reports
+    if (['approved', 'denied'].includes(report.review?.status)) {
+      return res.status(400).json({ error: `Report already ${report.review.status}. Cannot re-review.` });
     }
 
     // Update review

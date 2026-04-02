@@ -35,8 +35,14 @@ router.get('/my-reports', auth, getMyMunicipalReports);
 router.get('/reports/:id', auth, getReportStatus);
 
 // ─── Municipal Worker Portal ──────────────────────────────────────────────
-router.get('/worker/queue', auth, workerGetQueue);
-router.put('/worker/reports/:id', auth, workerUpdateReport);
-router.get('/worker/stats', auth, workerGetStats);
+const requireMunicipalWorker = (req, res, next) => {
+  if (!['municipal_worker', 'admin'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Municipal worker access required' });
+  }
+  next();
+};
+router.get('/worker/queue', auth, requireMunicipalWorker, workerGetQueue);
+router.put('/worker/reports/:id', auth, requireMunicipalWorker, workerUpdateReport);
+router.get('/worker/stats', auth, requireMunicipalWorker, workerGetStats);
 
 export default router;

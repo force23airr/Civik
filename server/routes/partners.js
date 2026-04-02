@@ -26,7 +26,10 @@ router.post('/data/:id/connect', auth, connectToDataPartner);
 router.delete('/data/:id/disconnect', auth, disconnectFromDataPartner);
 router.put('/data/:id/preferences', auth, updatePartnerPreferences);
 
-// Admin/Setup route
-router.post('/seed', seedPartners);
+// Admin/Setup route - requires admin role
+router.post('/seed', auth, (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+  next();
+}, seedPartners);
 
 export default router;

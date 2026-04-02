@@ -65,7 +65,7 @@ export const submitParkingViolation = async (req, res) => {
       return {
         filename: file.filename,
         originalFilename: file.originalname,
-        path: file.path,
+        path: `/uploads/${file.filename}`,
         mimetype: file.mimetype,
         size: file.size,
         sha256Hash
@@ -156,13 +156,16 @@ export const getMyReports = async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
     const query = { reporter: req.user._id };
-    if (status) query.status = status;
+    if (status && typeof status === 'string') query.status = status;
+
+    const safeLimit = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const safePage = Math.max(parseInt(page) || 1, 1);
 
     const reports = await ParkingViolation.find(query)
       .populate('assignedStation', 'name jurisdiction address')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
 
     const total = await ParkingViolation.countDocuments(query);
 
@@ -190,6 +193,14 @@ export const getReport = async (req, res) => {
 
     if (!report) {
       return res.status(404).json({ error: 'Report not found' });
+    }
+
+    // Ownership check — only reporter, police, or admin can view
+    const isOwner = report.reporter._id.toString() === req.user._id.toString();
+    const isPolice = req.user.role === 'police_officer';
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isPolice && !isAdmin) {
+      return res.status(403).json({ error: 'Not authorized to view this report' });
     }
 
     res.json(report);

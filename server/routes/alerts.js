@@ -4,7 +4,7 @@ import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/', getAlerts);
+router.get('/', auth, getAlerts);
 router.post('/', auth, createAlert);
 router.delete('/:id', auth, deleteAlert);
 

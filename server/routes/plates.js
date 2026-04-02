@@ -14,12 +14,12 @@ import {
 
 const router = express.Router();
 
-// Public routes (no auth required)
-router.get('/flagged', getFlaggedPlates);
-router.get('/stats', getPlateStats);
-
 // Protected routes require authentication
 router.use(auth);
+
+// Flagged plates and stats require auth
+router.get('/flagged', getFlaggedPlates);
+router.get('/stats', getPlateStats);
 
 // Detect plates from incident media files
 router.post('/detect/:incidentId', detectPlatesFromIncident);

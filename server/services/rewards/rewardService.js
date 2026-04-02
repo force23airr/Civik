@@ -99,6 +99,13 @@ export const REWARD_VALUES = {
  */
 export async function awardIncidentCredits(incident, userId) {
   try {
+    // Idempotency check — prevent double-spend
+    const existing = await Reward.findOne({
+      'source.entityId': incident._id,
+      type: 'incident_upload'
+    });
+    if (existing) return existing;
+
     // Get base amount for incident type
     const baseAmount = REWARD_VALUES.incident_upload[incident.type] || 5;
 
@@ -196,6 +203,10 @@ export async function awardIncidentCredits(incident, userId) {
  */
 export async function awardPoliceReportBonus(incidentId, userId) {
   try {
+    // Idempotency check
+    const existing = await Reward.findOne({ 'source.entityId': incidentId, type: 'police_report' });
+    if (existing) return existing;
+
     const amount = REWARD_VALUES.action_bonus.police_report;
     const consent = await DataConsent.findOne({ user: userId });
     const multiplier = consent?.tier?.multiplier || 1.0;
@@ -226,6 +237,10 @@ export async function awardPoliceReportBonus(incidentId, userId) {
  */
 export async function awardInsuranceClaimBonus(claimId, userId) {
   try {
+    // Idempotency check
+    const existing = await Reward.findOne({ 'source.entityId': claimId, type: 'insurance_claim' });
+    if (existing) return existing;
+
     const amount = REWARD_VALUES.action_bonus.insurance_claim;
     const consent = await DataConsent.findOne({ user: userId });
     const multiplier = consent?.tier?.multiplier || 1.0;
@@ -396,6 +411,13 @@ export async function checkTierUpgrade(userId) {
  */
 export async function awardParkingViolationBounty(parkingViolationId, userId, violationType) {
   try {
+    // Idempotency check — prevent double bounty payout
+    const existing = await Reward.findOne({
+      'source.entityId': parkingViolationId,
+      type: 'parking_violation_approved'
+    });
+    if (existing) return existing;
+
     const baseAmount = REWARD_VALUES.parking_violation_bounty[violationType] || 200;
     const consent = await DataConsent.findOne({ user: userId });
     const multiplier = consent?.tier?.multiplier || 1.0;
@@ -549,9 +571,30 @@ export async function processPayout(userId, amount, paymentMethod) {
     description: `Payout of ${amount} credits via ${paymentMethod}`
   });
 
-  // Update balances
-  consent.compensation.creditsPending += amount;
-  await consent.save();
+  // Atomically deduct balance to prevent race condition
+  const updated = await DataConsent.findOneAndUpdate(
+    {
+      user: userId,
+      $expr: { $gte: [{ $subtract: ['$compensation.creditsEarned', '$compensation.creditsRedeemed'] }, amount] }
+    },
+    {
+      $inc: {
+        'compensation.creditsRedeemed': amount,
+        'compensation.creditsPending': amount
+      }
+    },
+    { new: true }
+  );
+
+  if (!updated) {
+    await Reward.findByIdAndDelete(reward._id);
+    throw new Error('Insufficient balance or concurrent payout detected');
+  }
+
+  // Update User model balance
+  await User.findByIdAndUpdate(userId, {
+    $inc: { 'rewards.creditsBalance': -amount }
+  });
 
   return reward;
 }

@@ -40,7 +40,8 @@ export const register = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('[Auth] Register error:', error);
+    res.status(500).json({ message: 'An internal error occurred' });
   }
 };
 
@@ -49,6 +50,11 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validate input types to prevent NoSQL injection
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ message: 'Invalid input' });
+    }
 
     // Find user with password
     const user = await User.findOne({ email }).select('+password');
@@ -78,7 +84,8 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('[Auth] Login error:', error);
+    res.status(500).json({ message: 'An internal error occurred' });
   }
 };
 
