@@ -20,7 +20,8 @@
         "NSCameraUsageDescription": "DashGuard needs your camera to capture parking violations and road incidents.",
         "NSPhotoLibraryUsageDescription": "DashGuard needs access to your photo library to attach evidence to reports.",
         "NSLocationWhenInUseUsageDescription": "DashGuard uses your location to auto-detect the nearest police department and attach GPS coordinates to your report.",
-        "NSMicrophoneUsageDescription": "DashGuard needs microphone access when recording video evidence."
+        "NSMicrophoneUsageDescription": "DashGuard needs microphone access when recording video evidence.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -67,7 +68,8 @@
       ],
       "expo-router",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
