@@ -30,7 +30,7 @@ export const getDepartmentsNearby = async (req, res) => {
 
     res.json({ departments: withDistance, total: withDistance.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -70,7 +70,7 @@ export const lookupDepartment = async (req, res) => {
         : 'No registered department found. Your report will be queued for manual routing.'
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -95,7 +95,7 @@ export const getMyMunicipalReports = async (req, res) => {
 
     res.json({ reports, total, page: parseInt(page), pages: Math.ceil(total / limit) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -119,7 +119,7 @@ export const getReportStatus = async (req, res) => {
 
     res.json(report);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -174,7 +174,7 @@ export const getDepartments = async (req, res) => {
       } : {}
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -230,7 +230,7 @@ export const workerGetQueue = async (req, res) => {
       department: dept?.name
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -288,7 +288,7 @@ export const workerUpdateReport = async (req, res) => {
 
     res.json({ success: true, report, message: `Report marked as ${status}` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -319,7 +319,7 @@ export const workerGetStats = async (req, res) => {
       recentResolved
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -368,7 +368,7 @@ export const getJurisdictions = async (req, res) => {
       connectedCities: Array.from(citySet).sort()
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 

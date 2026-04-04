@@ -26,7 +26,7 @@ const CommentSection = ({ violationId }) => {
   }, [violationId, sortBy]);
 
   const setupSocket = () => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(window.location.origin);
     newSocket.emit('join-violation', violationId);
 
     newSocket.on('new-comment', (data) => {
@@ -54,7 +54,7 @@ const CommentSection = ({ violationId }) => {
       const config = { withCredentials: true };
 
       const response = await axios.get(
-        `http://localhost:5000/api/violations/${violationId}/comments?sort=${sortBy}`,
+        `/api/violations/${violationId}/comments?sort=${sortBy}`,
         config
       );
 
@@ -86,7 +86,7 @@ const CommentSection = ({ violationId }) => {
     try {
       setSubmitting(true);
       const response = await axios.post(
-        `http://localhost:5000/api/violations/${violationId}/comments`,
+        `/api/violations/${violationId}/comments`,
         { text: newCommentText },
         {
           withCredentials: true
@@ -111,7 +111,7 @@ const CommentSection = ({ violationId }) => {
 
     try {
       await axios.post(
-        `http://localhost:5000/api/violations/comments/${commentId}/like`,
+        `/api/violations/comments/${commentId}/like`,
         {},
         {
           withCredentials: true
@@ -144,7 +144,7 @@ const CommentSection = ({ violationId }) => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/violations/comments/${commentId}`,
+        `/api/violations/comments/${commentId}`,
         {
           withCredentials: true
         }

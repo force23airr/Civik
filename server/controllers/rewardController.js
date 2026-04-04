@@ -89,7 +89,7 @@ export const getDashboard = async (req, res) => {
     });
   } catch (error) {
     console.error('[RewardController] Dashboard error:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -131,7 +131,7 @@ export const getHistory = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -161,7 +161,7 @@ export const getTiers = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -279,7 +279,7 @@ export const getReferralCode = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -330,7 +330,7 @@ export const getReferrals = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -419,7 +419,7 @@ export const getLeaderboardData = async (req, res) => {
       } : null
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -442,13 +442,40 @@ export const updateProfile = async (req, res) => {
 
     const updates = {};
 
-    if (isGigDriver !== undefined) updates['profile.isGigDriver'] = isGigDriver;
-    if (gigPlatforms) updates['profile.gigPlatforms'] = gigPlatforms;
-    if (averageHoursPerWeek) updates['profile.averageHoursPerWeek'] = averageHoursPerWeek;
-    if (primaryCity) updates['profile.primaryCity'] = primaryCity;
-    if (primaryState) updates['profile.primaryState'] = primaryState;
-    if (dashCamModel) updates['profile.dashCamModel'] = dashCamModel;
-    if (vehicleType) updates['profile.vehicleType'] = vehicleType;
+    // Validate input types
+    if (isGigDriver !== undefined) {
+      if (typeof isGigDriver !== 'boolean') return res.status(400).json({ message: 'isGigDriver must be a boolean' });
+      updates['profile.isGigDriver'] = isGigDriver;
+    }
+    if (gigPlatforms) {
+      const validPlatforms = ['uber', 'lyft', 'doordash', 'grubhub', 'instacart', 'amazon_flex', 'shipt', 'spark', 'other'];
+      if (!Array.isArray(gigPlatforms) || !gigPlatforms.every(p => validPlatforms.includes(p))) {
+        return res.status(400).json({ message: 'Invalid gig platform' });
+      }
+      updates['profile.gigPlatforms'] = gigPlatforms;
+    }
+    if (averageHoursPerWeek !== undefined) {
+      const hours = Number(averageHoursPerWeek);
+      if (isNaN(hours) || hours < 0 || hours > 168) return res.status(400).json({ message: 'Invalid hours per week' });
+      updates['profile.averageHoursPerWeek'] = hours;
+    }
+    if (primaryCity) {
+      if (typeof primaryCity !== 'string' || primaryCity.length > 100) return res.status(400).json({ message: 'Invalid city' });
+      updates['profile.primaryCity'] = primaryCity;
+    }
+    if (primaryState) {
+      if (typeof primaryState !== 'string' || primaryState.length > 50) return res.status(400).json({ message: 'Invalid state' });
+      updates['profile.primaryState'] = primaryState;
+    }
+    if (dashCamModel) {
+      if (typeof dashCamModel !== 'string' || dashCamModel.length > 100) return res.status(400).json({ message: 'Invalid dash cam model' });
+      updates['profile.dashCamModel'] = dashCamModel;
+    }
+    if (vehicleType) {
+      const validTypes = ['car', 'suv', 'truck', 'van', 'motorcycle', 'bicycle', 'other'];
+      if (!validTypes.includes(vehicleType)) return res.status(400).json({ message: 'Invalid vehicle type' });
+      updates['profile.vehicleType'] = vehicleType;
+    }
     if (showOnLeaderboard !== undefined) updates['rewards.showOnLeaderboard'] = showOnLeaderboard;
     if (publicStats !== undefined) updates['rewards.publicStats'] = publicStats;
 

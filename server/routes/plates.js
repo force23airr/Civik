@@ -1,5 +1,6 @@
 import express from 'express';
 import { auth } from '../middleware/auth.js';
+import { generalLimiter } from '../middleware/rateLimit.js';
 import {
   detectPlatesFromIncident,
   getIncidentPlates,
@@ -27,11 +28,11 @@ router.post('/detect/:incidentId', detectPlatesFromIncident);
 // Get plates for a specific incident
 router.get('/incident/:incidentId', getIncidentPlates);
 
-// Search incidents by plate number
-router.get('/search', searchByPlate);
+// Search incidents by plate number (rate limited to prevent enumeration)
+router.get('/search', generalLimiter, searchByPlate);
 
-// Get history for a specific plate
-router.get('/history/:plate', getPlateHistory);
+// Get history for a specific plate (rate limited, restricted to admin/police)
+router.get('/history/:plate', generalLimiter, getPlateHistory);
 
 // Manually add a plate to an incident
 router.post('/incident/:incidentId/add', addPlateManually);

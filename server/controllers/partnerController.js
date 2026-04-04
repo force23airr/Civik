@@ -17,7 +17,7 @@ export const getInsurancePartners = async (req, res) => {
     }
 
     let partners;
-    if (search) {
+    if (search && typeof search === 'string' && search.length <= 100) {
       partners = await InsurancePartner.find({
         ...query,
         $text: { $search: search }

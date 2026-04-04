@@ -144,7 +144,7 @@ export const submitParkingViolation = async (req, res) => {
     });
   } catch (error) {
     console.error('[ParkingViolation] Submit error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -176,7 +176,7 @@ export const getMyReports = async (req, res) => {
       pages: Math.ceil(total / limit)
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -205,7 +205,7 @@ export const getReport = async (req, res) => {
 
     res.json(report);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -237,7 +237,7 @@ export const getNearestStation = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 

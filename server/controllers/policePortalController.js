@@ -57,7 +57,7 @@ export const getCaseQueue = async (req, res) => {
       department: req.department.name
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -92,7 +92,7 @@ export const getCaseDetails = async (req, res) => {
 
     res.json(violationReport);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -111,9 +111,9 @@ export const streamVideo = async (req, res) => {
       return res.status(404).json({ error: 'Evidence file not found' });
     }
 
-    const videoPath = path.resolve(evidence.path);
+    const videoPath = path.normalize(path.resolve(evidence.path));
     // Prevent path traversal — ensure file is within uploads directory
-    if (!videoPath.startsWith(UPLOADS_DIR)) {
+    if (!videoPath.startsWith(path.resolve(UPLOADS_DIR))) {
       return res.status(403).json({ error: 'Invalid file path' });
     }
     if (!fs.existsSync(videoPath)) {
@@ -160,7 +160,7 @@ export const streamVideo = async (req, res) => {
       details: { evidenceId }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -233,7 +233,7 @@ export const updateCaseStatus = async (req, res) => {
       message: `Case ${status === 'citation_issued' ? 'citation issued' : 'updated'} successfully`
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -267,7 +267,7 @@ export const getDepartmentStats = async (req, res) => {
       )
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -288,6 +288,6 @@ export const exportEvidence = async (req, res) => {
 
     res.json({ message: 'Evidence package generation started' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };

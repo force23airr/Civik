@@ -63,7 +63,7 @@ export const getHeatmap = async (req, res) => {
       data
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -85,7 +85,7 @@ export const getTrends = async (req, res) => {
       data
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -103,7 +103,7 @@ export const getPeakHours = async (req, res) => {
       data
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -121,7 +121,7 @@ export const getByType = async (req, res) => {
       data
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -139,7 +139,7 @@ export const getBySeverity = async (req, res) => {
       data
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -157,7 +157,7 @@ export const getByLocation = async (req, res) => {
       data
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -175,7 +175,7 @@ export const getSummary = async (req, res) => {
       data
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -259,7 +259,7 @@ export const getExportJobStatus = async (req, res) => {
       completedAt: job.completedAt
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -286,14 +286,21 @@ export const downloadExport = async (req, res) => {
     }
 
     const filePath = job.result.filePath;
-    if (!fs.existsSync(filePath)) {
+
+    // Path traversal guard — ensure file is within exports directory
+    const safePath = path.resolve(filePath);
+    if (!safePath.startsWith(path.resolve(exportsDir))) {
+      return res.status(400).json({ message: 'Invalid file path' });
+    }
+
+    if (!fs.existsSync(safePath)) {
       return res.status(404).json({ message: 'Export file not found' });
     }
 
     const filename = `civik-export-${job.jobId}.${job.format}`;
-    res.download(filePath, filename);
+    res.download(safePath, filename);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -327,7 +334,7 @@ export const getUserExportJobs = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -358,6 +365,15 @@ async function processExportJob(jobId) {
 
     if (job.filters.statuses?.length > 0) {
       query.status = { $in: job.filters.statuses };
+    }
+
+    // Restrict non-admin exports to user's own incidents
+    if (job.options.anonymize === false) {
+      // Non-anonymized exports must be user-scoped unless admin
+      const jobUser = await import('../models/User.js').then(m => m.default.findById(job.user));
+      if (!jobUser || jobUser.role !== 'admin') {
+        query.user = job.user;
+      }
     }
 
     // Get incidents

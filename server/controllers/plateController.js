@@ -113,6 +113,11 @@ export const getIncidentPlates = async (req, res) => {
       return res.status(404).json({ error: 'Incident not found' });
     }
 
+    // Authorization: only the incident owner or admin can view plates
+    if (incident.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized to view plates for this incident' });
+    }
+
     res.json({
       plates: incident.detectedPlates,
       count: incident.detectedPlates.length
@@ -133,6 +138,11 @@ export const getPlateHistory = async (req, res) => {
 
     if (!validatePlateFormat(plate)) {
       return res.status(400).json({ error: 'Invalid plate format' });
+    }
+
+    // Restrict plate history to admin and police officers
+    if (!['admin', 'police_officer'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Plate history is restricted to authorized personnel' });
     }
 
     const history = await checkPlateHistory(plate, Incident);
@@ -289,10 +299,18 @@ export const searchByPlate = async (req, res) => {
     }
 
     const normalizedSearch = normalizePlate(plate);
+    // Escape regex special characters to prevent ReDoS
+    const escapedSearch = normalizedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    const incidents = await Incident.find({
-      'detectedPlates.plate': { $regex: normalizedSearch, $options: 'i' }
-    })
+    // Build query — regular users only see their own incidents
+    const query = {
+      'detectedPlates.plate': { $regex: escapedSearch, $options: 'i' }
+    };
+    if (!['admin', 'police_officer'].includes(req.user.role)) {
+      query.user = req.user._id;
+    }
+
+    const incidents = await Incident.find(query)
       .populate('user', 'username')
       .select('title type severity location createdAt detectedPlates')
       .sort({ createdAt: -1 })
