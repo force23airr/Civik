@@ -51,9 +51,7 @@ const CommentSection = ({ violationId }) => {
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const config = user ? {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      } : {};
+      const config = { withCredentials: true };
 
       const response = await axios.get(
         `http://localhost:5000/api/violations/${violationId}/comments?sort=${sortBy}`,
@@ -91,7 +89,7 @@ const CommentSection = ({ violationId }) => {
         `http://localhost:5000/api/violations/${violationId}/comments`,
         { text: newCommentText },
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          withCredentials: true
         }
       );
 
@@ -116,7 +114,7 @@ const CommentSection = ({ violationId }) => {
         `http://localhost:5000/api/violations/comments/${commentId}/like`,
         {},
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          withCredentials: true
         }
       );
 
@@ -148,7 +146,7 @@ const CommentSection = ({ violationId }) => {
       await axios.delete(
         `http://localhost:5000/api/violations/comments/${commentId}`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          withCredentials: true
         }
       );
 

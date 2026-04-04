@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -68,6 +69,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 app.use(mongoSanitize());
 
 // Static files — uploads only (reports/exports served through auth routes)

@@ -15,29 +15,21 @@ export default function PoliceDashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('token');
+  const axiosConfig = { withCredentials: true };
 
   useEffect(() => {
-    if (!token) {
-      navigate('/police/login');
-      return;
-    }
-
     fetchCases();
     fetchStats();
-  }, [filter, token, navigate]);
+  }, [filter, navigate]);
 
   const fetchCases = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/cases?status=${filter}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`${API_BASE_URL}/cases?status=${filter}`, axiosConfig);
       setCases(response.data.cases || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching cases:', error);
       if (error.response?.status === 401 || error.response?.status === 403) {
-        localStorage.removeItem('token');
         navigate('/police/login');
       }
       setLoading(false);
@@ -46,9 +38,7 @@ export default function PoliceDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`${API_BASE_URL}/stats`, axiosConfig);
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -57,9 +47,7 @@ export default function PoliceDashboard() {
 
   const loadCaseDetails = async (caseId) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/cases/${caseId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`${API_BASE_URL}/cases/${caseId}`, axiosConfig);
       setSelectedCase(response.data);
     } catch (error) {
       console.error('Error loading case:', error);
@@ -72,7 +60,7 @@ export default function PoliceDashboard() {
       await axios.put(
         `${API_BASE_URL}/cases/${selectedCase._id}/status`,
         { status, ...additionalData },
-        { headers: { Authorization: `Bearer ${token}` } }
+        axiosConfig
       );
 
       alert(`Case ${status === 'citation_issued' ? 'citation issued' : 'updated'} successfully`);
@@ -94,8 +82,12 @@ export default function PoliceDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/auth/logout', {}, axiosConfig);
+    } catch (error) {
+      // Proceed with local logout
+    }
     localStorage.removeItem('userRole');
     navigate('/police/login');
   };

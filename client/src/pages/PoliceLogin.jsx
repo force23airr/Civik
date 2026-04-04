@@ -19,7 +19,7 @@ export default function PoliceLogin() {
       const response = await axios.post('/api/auth/login', {
         email,
         password
-      });
+      }, { withCredentials: true });
 
       // Check if user is a police officer
       if (response.data.user.role !== 'police_officer') {
@@ -28,7 +28,7 @@ export default function PoliceLogin() {
         return;
       }
 
-      localStorage.setItem('token', response.data.token);
+      // Token is now set as HttpOnly cookie by the server
       localStorage.setItem('userRole', 'police_officer');
       navigate('/police/dashboard');
     } catch (err) {

@@ -6,6 +6,15 @@ const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 
+// Cookie options for HttpOnly secure token storage
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict',
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  path: '/'
+};
+
 // @desc    Register user
 // @route   POST /api/auth/register
 export const register = async (req, res) => {
@@ -39,11 +48,11 @@ export const register = async (req, res) => {
     // Create user
     const user = await User.create({ username, email, password });
 
-    // Generate token
+    // Generate token and set as HttpOnly cookie
     const token = generateToken(user._id);
+    res.cookie('token', token, cookieOptions);
 
     res.status(201).json({
-      token,
       user: {
         _id: user._id,
         username: user.username,
@@ -83,11 +92,11 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Generate token
+    // Generate token and set as HttpOnly cookie
     const token = generateToken(user._id);
+    res.cookie('token', token, cookieOptions);
 
     res.json({
-      token,
       user: {
         _id: user._id,
         username: user.username,
@@ -100,6 +109,13 @@ export const login = async (req, res) => {
     console.error('[Auth] Login error:', error);
     res.status(500).json({ message: 'An internal error occurred' });
   }
+};
+
+// @desc    Logout user (clear cookie)
+// @route   POST /api/auth/logout
+export const logout = (req, res) => {
+  res.cookie('token', '', { ...cookieOptions, maxAge: 0 });
+  res.json({ message: 'Logged out successfully' });
 };
 
 // @desc    Get current user

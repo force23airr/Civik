@@ -1,27 +1,34 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
+// Extract token from HttpOnly cookie or Authorization header
+const extractToken = (req) => {
+  if (req.cookies?.token) {
+    return req.cookies.token;
+  }
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+  return null;
+};
+
 // Admin middleware - extends auth to require admin role
 const admin = async (req, res, next) => {
   try {
-    // Get token from header
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = extractToken(req);
 
     if (!token) {
       return res.status(401).json({ message: 'No token, authorization denied' });
     }
 
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Get user from database
     const user = await User.findById(decoded.userId).select('-password');
 
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    // Check if user is admin
     if (user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
     }
@@ -42,7 +49,7 @@ const admin = async (req, res, next) => {
 // Moderator middleware - allows moderators and admins
 const moderator = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = extractToken(req);
 
     if (!token) {
       return res.status(401).json({ message: 'No token, authorization denied' });

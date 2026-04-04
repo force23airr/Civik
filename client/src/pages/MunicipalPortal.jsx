@@ -58,19 +58,14 @@ export default function MunicipalPortal() {
   const [ticketNumber, setTicketNumber] = useState('');
   const limit = 15;
 
-  const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
     if (userRole && userRole !== 'municipal_worker' && userRole !== 'admin') {
       navigate('/');
       return;
     }
-  }, [token, userRole, navigate]);
+  }, [userRole, navigate]);
 
   const fetchQueue = useCallback(async () => {
     setLoading(true);
@@ -103,13 +98,11 @@ export default function MunicipalPortal() {
     if (token) {
       fetchQueue();
     }
-  }, [fetchQueue, token]);
+  }, [fetchQueue]);
 
   useEffect(() => {
-    if (token) {
-      fetchStats();
-    }
-  }, [fetchStats, token]);
+    fetchStats();
+  }, [fetchStats]);
 
   const handleStatusUpdate = async (reportId, newStatus) => {
     setUpdating(true);
@@ -149,8 +142,12 @@ export default function MunicipalPortal() {
     setActiveTab('queue');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      // Proceed with local logout
+    }
     localStorage.removeItem('userRole');
     navigate('/login');
   };
