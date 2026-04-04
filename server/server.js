@@ -37,13 +37,37 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+  : ['http://localhost:5173'];
+
+const extractSocketToken = (socket) => {
+  const authToken = socket.handshake.auth?.token;
+  if (authToken) return authToken;
+
+  const authHeader = socket.handshake.headers?.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+
+  const cookieHeader = socket.handshake.headers?.cookie;
+  if (!cookieHeader) return null;
+
+  const tokenCookie = cookieHeader
+    .split(';')
+    .map(cookie => cookie.trim())
+    .find(cookie => cookie.startsWith('token='));
+
+  return tokenCookie ? decodeURIComponent(tokenCookie.slice('token='.length)) : null;
+};
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST']
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
@@ -65,7 +89,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json({ limit: '10kb' }));
@@ -132,7 +156,7 @@ app.use('/api/v1/marketplace', marketplaceApiRouter);
 // Socket.io authentication middleware
 io.use(async (socket, next) => {
   try {
-    const token = socket.handshake.auth?.token;
+    const token = extractSocketToken(socket);
     if (!token) return next(new Error('Authentication required'));
     const jwt = await import('jsonwebtoken');
     const decoded = jwt.default.verify(token, process.env.JWT_SECRET);

@@ -6,6 +6,15 @@ const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 
+const serializeUser = (user) => ({
+  _id: user._id,
+  username: user.username,
+  email: user.email,
+  avatar: user.avatar,
+  role: user.role,
+  createdAt: user.createdAt
+});
+
 // Cookie options for HttpOnly secure token storage
 const cookieOptions = {
   httpOnly: true,
@@ -26,6 +35,9 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid input' });
     }
 
+    const normalizedUsername = username.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Validate password strength
     if (password.length < 12) {
       return res.status(400).json({ message: 'Password must be at least 12 characters' });
@@ -36,30 +48,29 @@ export const register = async (req, res) => {
 
     // Check if user exists
     const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
+      $or: [{ email: normalizedEmail }, { username: normalizedUsername }]
     });
 
     if (existingUser) {
       return res.status(400).json({
-        message: existingUser.email === email ? 'Email already registered' : 'Username taken'
+        message: existingUser.email === normalizedEmail ? 'Email already registered' : 'Username taken'
       });
     }
 
     // Create user
-    const user = await User.create({ username, email, password });
+    const user = await User.create({
+      username: normalizedUsername,
+      email: normalizedEmail,
+      password
+    });
 
     // Generate token and set as HttpOnly cookie
     const token = generateToken(user._id);
     res.cookie('token', token, cookieOptions);
 
     res.status(201).json({
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        createdAt: user.createdAt
-      }
+      token,
+      user: serializeUser(user)
     });
   } catch (error) {
     console.error('[Auth] Register error:', error);
@@ -78,8 +89,10 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid input' });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Find user with password
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -97,13 +110,8 @@ export const login = async (req, res) => {
     res.cookie('token', token, cookieOptions);
 
     res.json({
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        createdAt: user.createdAt
-      }
+      token,
+      user: serializeUser(user)
     });
   } catch (error) {
     console.error('[Auth] Login error:', error);
@@ -122,12 +130,6 @@ export const logout = (req, res) => {
 // @route   GET /api/auth/me
 export const getMe = async (req, res) => {
   res.json({
-    user: {
-      _id: req.user._id,
-      username: req.user.username,
-      email: req.user.email,
-      avatar: req.user.avatar,
-      createdAt: req.user.createdAt
-    }
+    user: serializeUser(req.user)
   });
 };

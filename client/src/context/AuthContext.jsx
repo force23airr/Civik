@@ -15,6 +15,26 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const persistSession = (sessionUser, token) => {
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+
+    if (sessionUser?.role) {
+      localStorage.setItem('userRole', sessionUser.role);
+    } else {
+      localStorage.removeItem('userRole');
+    }
+
+    setUser(sessionUser);
+  };
+
+  const clearSession = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    setUser(null);
+  };
+
   useEffect(() => {
     loadUser();
   }, []);
@@ -22,9 +42,9 @@ export const AuthProvider = ({ children }) => {
   const loadUser = async () => {
     try {
       const res = await api.get('/auth/me');
-      setUser(res.data.user);
+      persistSession(res.data.user);
     } catch (error) {
-      setUser(null);
+      clearSession();
     } finally {
       setLoading(false);
     }
@@ -32,13 +52,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    setUser(res.data.user);
+    persistSession(res.data.user, res.data.token);
     return res.data;
   };
 
   const register = async (username, email, password) => {
     const res = await api.post('/auth/register', { username, email, password });
-    setUser(res.data.user);
+    persistSession(res.data.user, res.data.token);
     return res.data;
   };
 
@@ -48,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       // Proceed with local logout even if server call fails
     }
-    setUser(null);
+    clearSession();
   };
 
   const value = {
