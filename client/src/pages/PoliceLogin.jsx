@@ -23,12 +23,17 @@ export default function PoliceLogin() {
 
       // Check if user is a police officer
       if (response.data.user.role !== 'police_officer') {
+        await axios.post('/api/auth/logout', {}, { withCredentials: true });
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
         setError('Police officer access required');
         setLoading(false);
         return;
       }
 
-      // Token is now set as HttpOnly cookie by the server
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
       localStorage.setItem('userRole', 'police_officer');
       navigate('/police/dashboard');
     } catch (err) {

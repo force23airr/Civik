@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
+import { API_URL } from './api';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || API_URL.replace(/\/api\/?$/, '');
 
 const getSocketOptions = () => ({
   autoConnect: false,

@@ -37,9 +37,14 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
-  : ['http://localhost:5173'];
+const allowedOrigins = Array.from(new Set([
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+    : []),
+  process.env.APP_URL,
+  'http://localhost:5173',
+  'https://civik.onrender.com'
+].filter(Boolean)));
 
 const extractSocketToken = (socket) => {
   const authToken = socket.handshake.auth?.token;

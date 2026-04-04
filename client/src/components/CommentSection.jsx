@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { io } from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import { createSocketConnection } from '../services/socket';
 import './CommentSection.css';
 
 const CommentSection = ({ violationId }) => {
@@ -11,23 +11,17 @@ const CommentSection = ({ violationId }) => {
   const [newCommentText, setNewCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sortBy, setSortBy] = useState('recent');
-  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     fetchComments();
-    setupSocket();
-
-    return () => {
-      if (socket) {
-        socket.emit('leave-violation', violationId);
-        socket.disconnect();
-      }
-    };
   }, [violationId, sortBy]);
 
-  const setupSocket = () => {
-    const newSocket = io(window.location.origin);
-    newSocket.emit('join-violation', violationId);
+  useEffect(() => {
+    const newSocket = createSocketConnection();
+
+    const joinRoom = () => {
+      newSocket.emit('join-violation', violationId);
+    };
 
     newSocket.on('new-comment', (data) => {
       setComments(prev => [data.comment, ...prev]);
@@ -45,18 +39,23 @@ const CommentSection = ({ violationId }) => {
       setComments(prev => prev.filter(comment => comment._id !== data.commentId));
     });
 
-    setSocket(newSocket);
-  };
+    newSocket.on('connect', joinRoom);
+    newSocket.connect();
+
+    return () => {
+      if (newSocket.connected) {
+        newSocket.emit('leave-violation', violationId);
+      }
+      newSocket.disconnect();
+    };
+  }, [violationId]);
 
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const config = { withCredentials: true };
-
-      const response = await axios.get(
-        `/api/violations/${violationId}/comments?sort=${sortBy}`,
-        config
-      );
+      const response = await api.get(`/violations/${violationId}/comments`, {
+        params: { sort: sortBy }
+      });
 
       setComments(response.data.comments);
     } catch (error) {
@@ -85,13 +84,7 @@ const CommentSection = ({ violationId }) => {
 
     try {
       setSubmitting(true);
-      const response = await axios.post(
-        `/api/violations/${violationId}/comments`,
-        { text: newCommentText },
-        {
-          withCredentials: true
-        }
-      );
+      await api.post(`/violations/${violationId}/comments`, { text: newCommentText });
 
       // Socket will handle adding the comment via real-time event
       setNewCommentText('');
@@ -110,13 +103,7 @@ const CommentSection = ({ violationId }) => {
     }
 
     try {
-      await axios.post(
-        `/api/violations/comments/${commentId}/like`,
-        {},
-        {
-          withCredentials: true
-        }
-      );
+      await api.post(`/violations/comments/${commentId}/like`, {});
 
       // Update local state optimistically
       setComments(prev => prev.map(comment => {
@@ -143,12 +130,7 @@ const CommentSection = ({ violationId }) => {
     }
 
     try {
-      await axios.delete(
-        `/api/violations/comments/${commentId}`,
-        {
-          withCredentials: true
-        }
-      );
+      await api.delete(`/violations/comments/${commentId}`);
 
       // Socket will handle removing the comment via real-time event
     } catch (error) {
