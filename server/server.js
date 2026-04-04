@@ -72,11 +72,27 @@ app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(mongoSanitize());
 
-// Static files — uploads only (reports/exports served through auth routes)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+// Uploads served through authenticated route — no public static access
+// This prevents unauthenticated users from accessing evidence files by URL
+app.use('/uploads', async (req, res, next) => {
+  try {
+    const cookieToken = req.cookies?.token;
+    const headerToken = req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.split(' ')[1]
+      : null;
+    const token = cookieToken || headerToken;
+    if (!token) return res.status(401).json({ message: 'Authentication required' });
+    const jwt = await import('jsonwebtoken');
+    jwt.default.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+}, express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res) => {
     res.set('X-Content-Type-Options', 'nosniff');
     res.set('Content-Disposition', 'inline');
+    res.set('Cache-Control', 'private, no-cache');
   }
 }));
 

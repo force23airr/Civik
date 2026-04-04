@@ -45,7 +45,7 @@ export const getConsent = async (req, res) => {
       statistics: consent.statistics
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -98,7 +98,7 @@ export const optIn = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -142,7 +142,7 @@ export const updateConsent = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -164,7 +164,7 @@ export const optOut = async (req, res) => {
       note: 'Your data will not be included in future datasets. Existing datasets are not affected.'
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -214,7 +214,7 @@ export const getContributions = async (req, res) => {
       creditsPending: consent.compensation.creditsPending
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -246,7 +246,7 @@ export const getEarnings = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -288,7 +288,7 @@ export const excludeIncident = async (req, res) => {
       excludedIncidents: consent.incidentFilters.excludedIncidents
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -337,7 +337,7 @@ export const getDatasets = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -360,7 +360,7 @@ export const getDatasetById = async (req, res) => {
 
     res.json(dataset);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -401,7 +401,7 @@ export const createDataset = async (req, res) => {
       generateUrl: `/api/marketplace/datasets/${dataset.datasetId}/generate`
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -436,7 +436,7 @@ export const generateDataset = async (req, res) => {
       status: 'generating'
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -466,7 +466,7 @@ export const updateDataset = async (req, res) => {
 
     res.json(dataset);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -487,7 +487,7 @@ export const archiveDataset = async (req, res) => {
 
     res.json({ message: 'Dataset archived successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 

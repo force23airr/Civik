@@ -18,7 +18,7 @@ export const getAlerts = async (req, res) => {
 
     res.json(alerts);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -53,7 +53,7 @@ export const createAlert = async (req, res) => {
 
     res.status(201).json(alert);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -80,7 +80,7 @@ export const deleteAlert = async (req, res) => {
 
     res.json({ message: 'Alert deleted' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 

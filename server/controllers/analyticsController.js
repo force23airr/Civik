@@ -254,7 +254,7 @@ export const getExportJobStatus = async (req, res) => {
         recordCount: job.result.recordCount,
         expiresAt: job.result.expiresAt
       } : null,
-      error: job.status === 'failed' ? job.error.message : null,
+      error: job.status === 'failed' ? 'Export failed' : null,
       createdAt: job.createdAt,
       completedAt: job.completedAt
     });

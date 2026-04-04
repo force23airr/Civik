@@ -22,7 +22,7 @@ export const getParkingQueue = async (req, res) => {
     }
 
     const cases = await ParkingViolation.find(query)
-      .populate('reporter', 'username email')
+      .populate('reporter', 'username avatar')
       .sort({ createdAt: -1 })
       .skip((safePage - 1) * safeLimit)
       .limit(safeLimit);
@@ -51,7 +51,7 @@ export const getParkingQueue = async (req, res) => {
       department: req.department.name
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -62,7 +62,7 @@ export const getParkingQueue = async (req, res) => {
 export const getParkingCaseDetail = async (req, res) => {
   try {
     const report = await ParkingViolation.findById(req.params.id)
-      .populate('reporter', 'username email phone')
+      .populate('reporter', 'username avatar')
       .populate('assignedStation', 'name jurisdiction');
 
     if (!report) {
@@ -82,7 +82,7 @@ export const getParkingCaseDetail = async (req, res) => {
 
     res.json(report);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
@@ -216,6 +216,6 @@ export const reviewParkingViolation = async (req, res) => {
     });
   } catch (error) {
     console.error('[ParkingPortal] Review error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred' });
   }
 };

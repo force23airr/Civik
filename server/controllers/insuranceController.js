@@ -56,7 +56,7 @@ export const createClaim = async (req, res) => {
 
     res.status(201).json(claim);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -121,7 +121,7 @@ export const submitWitnessReport = async (req, res) => {
     });
   } catch (error) {
     console.error('Error submitting witness report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -155,7 +155,7 @@ export const getUserClaims = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -177,7 +177,7 @@ export const getClaimById = async (req, res) => {
 
     res.json(claim);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -209,7 +209,7 @@ export const updateClaim = async (req, res) => {
     await claim.save();
     res.json(claim);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -234,7 +234,7 @@ export const deleteClaim = async (req, res) => {
     await claim.deleteOne();
     res.json({ message: 'Claim deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -283,7 +283,7 @@ export const submitClaim = async (req, res) => {
       claim
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -305,7 +305,7 @@ export const downloadClaimPDF = async (req, res) => {
 
     res.download(pdfResult.filepath, pdfResult.filename);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -362,7 +362,7 @@ export const getClaimJSON = async (req, res) => {
 
     res.json(claimDocument);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -414,7 +414,7 @@ export const apiGetClaims = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -437,7 +437,7 @@ export const apiGetClaimById = async (req, res) => {
 
     res.json(claim);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -490,7 +490,7 @@ export const apiUpdateClaimStatus = async (req, res) => {
       status: claim.status
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -533,7 +533,7 @@ export const apiVerifyClaim = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -573,7 +573,7 @@ export const createApiKey = async (req, res) => {
       warning: 'Save the secret now - it cannot be retrieved later!'
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -588,7 +588,7 @@ export const getApiKeys = async (req, res) => {
 
     res.json(apiKeys);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -618,7 +618,7 @@ export const updateApiKey = async (req, res) => {
 
     res.json(apiKey);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -639,7 +639,7 @@ export const deleteApiKey = async (req, res) => {
 
     res.json({ message: 'API key revoked successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 

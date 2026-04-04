@@ -187,7 +187,7 @@ export const getMyReports = async (req, res) => {
 export const getReport = async (req, res) => {
   try {
     const report = await ParkingViolation.findById(req.params.id)
-      .populate('reporter', 'username email')
+      .populate('reporter', 'username avatar')
       .populate('assignedStation', 'name jurisdiction address phone email')
       .populate('review.reviewedBy', 'username policeProfile.badgeNumber');
 

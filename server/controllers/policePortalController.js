@@ -37,7 +37,7 @@ export const getCaseQueue = async (req, res) => {
     }
 
     const cases = await ViolationReport.find(query)
-      .populate('reporter', 'username email')
+      .populate('reporter', 'username avatar')
       .sort({
         'lawEnforcementSubmissions.submittedAt': priority === 'oldest' ? 1 : -1
       })
@@ -67,7 +67,7 @@ export const getCaseDetails = async (req, res) => {
     const { caseId } = req.params;
 
     const violationReport = await ViolationReport.findById(caseId)
-      .populate('reporter', 'username email phone');
+      .populate('reporter', 'username avatar');
 
     if (!violationReport) {
       return res.status(404).json({ error: 'Case not found' });

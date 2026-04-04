@@ -13,8 +13,14 @@ export const getPoliceStations = async (req, res) => {
     const { city, state, isActive = 'true', limit = 50, page = 1 } = req.query;
 
     const query = {};
-    if (city) query['address.city'] = new RegExp(city, 'i');
-    if (state) query['address.state'] = new RegExp(state, 'i');
+    if (city) {
+      const escapedCity = city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query['address.city'] = new RegExp(escapedCity, 'i');
+    }
+    if (state) {
+      const escapedState = state.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query['address.state'] = new RegExp(escapedState, 'i');
+    }
     if (isActive !== 'all') query.isActive = isActive === 'true';
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -36,7 +42,7 @@ export const getPoliceStations = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -53,7 +59,7 @@ export const getPoliceStationById = async (req, res) => {
 
     res.json(station);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -94,7 +100,7 @@ export const getNearbyStations = async (req, res) => {
 
     res.json(stationsWithDistance);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -106,7 +112,7 @@ export const createPoliceStation = async (req, res) => {
     const station = await PoliceStation.create(req.body);
     res.status(201).json(station);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -127,7 +133,7 @@ export const updatePoliceStation = async (req, res) => {
 
     res.json(station);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Invalid request' });
   }
 };
 
@@ -144,7 +150,7 @@ export const deletePoliceStation = async (req, res) => {
 
     res.json({ message: 'Police station deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -233,7 +239,7 @@ export const createPoliceReport = async (req, res) => {
     });
   } catch (error) {
     console.error('Police report error:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -256,7 +262,7 @@ export const getIncidentPoliceReports = async (req, res) => {
 
     res.json(incident.policeReports || []);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -284,7 +290,7 @@ export const getPoliceReport = async (req, res) => {
 
     res.json(report);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -308,7 +314,7 @@ export const enableDepartmentPortal = async (req, res) => {
       department
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -351,21 +357,24 @@ export const createPoliceOfficer = async (req, res) => {
     });
     await department.save();
 
-    // Return user without password
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
     res.status(201).json({
       success: true,
       message: 'Police officer account created successfully',
-      user: userResponse
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        policeProfile: user.policeProfile,
+        createdAt: user.createdAt
+      }
     });
   } catch (error) {
     if (error.code === 11000) {
       // Duplicate key error
       return res.status(400).json({ message: 'Email or username already exists' });
     }
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 

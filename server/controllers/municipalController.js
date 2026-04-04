@@ -208,7 +208,7 @@ export const workerGetQueue = async (req, res) => {
     const [reports, total, statusCounts] = await Promise.all([
       MunicipalReport.find(query)
         .populate('incident', 'type title location severity mediaFiles createdAt')
-        .populate('reporter', 'username email')
+        .populate('reporter', 'username avatar')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(parseInt(limit)),
