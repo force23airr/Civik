@@ -28,6 +28,7 @@ import ReportParkingViolation from './pages/ReportParkingViolation';
 import MyParkingReports from './pages/MyParkingReports';
 import AdminDashboard from './pages/AdminDashboard';
 import MunicipalPortal from './pages/MunicipalPortal';
+import DashCamShop from './pages/DashCamShop';
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -218,6 +219,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Dash Cam Shop — accessible to everyone */}
+          <Route path="/shop" element={<DashCamShop />} />
 
           {/* Police Portal Routes */}
           <Route path="/police/login" element={<PoliceLogin />} />

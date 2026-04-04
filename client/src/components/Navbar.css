@@ -62,6 +62,15 @@
   color: #38a169 !important;
 }
 
+.shop-link {
+  color: #f59e0b !important;
+  font-weight: 600 !important;
+}
+
+.shop-link:hover {
+  color: #d97706 !important;
+}
+
 .flagged-link {
   color: #e53e3e !important;
   font-weight: 600 !important;

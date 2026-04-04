@@ -31,6 +31,7 @@ const Navbar = () => {
               <Link to="/insurance/claims">Insurance</Link>
               <Link to="/marketplace">Marketplace</Link>
               <Link to="/partners">Data Partners</Link>
+              <Link to="/shop" className="shop-link">Dash Cams</Link>
               <Link to="/report">
                 Report Incident
               </Link>
@@ -53,6 +54,7 @@ const Navbar = () => {
           ) : (
             <>
               <Link to="/get-rewarded" className="rewards-link">Earn Money</Link>
+              <Link to="/shop" className="shop-link">Dash Cams</Link>
               <Link to="/partners">Data Partners</Link>
               <Link to="/flagged-drivers" className="flagged-link">Flagged Drivers</Link>
               <Link to="/login">Login</Link>
