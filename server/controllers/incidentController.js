@@ -21,6 +21,11 @@ const processPlateDetection = async (incident) => {
 
     for (const file of incident.mediaFiles) {
       const filePath = path.join(__dirname, '..', file.path.replace(/^\//, ''));
+      const uploadsDir = path.resolve(__dirname, '..', 'uploads');
+      if (!path.resolve(filePath).startsWith(uploadsDir)) {
+        console.warn(`[PlateDetection] Path traversal blocked: ${filePath}`);
+        continue;
+      }
 
       if (!fs.existsSync(filePath)) {
         console.warn(`[PlateDetection] File not found: ${filePath}`);
@@ -91,7 +96,7 @@ export const getIncidents = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -108,7 +113,7 @@ export const getIncidentById = async (req, res) => {
 
     res.json(incident);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -163,7 +168,7 @@ export const createIncident = async (req, res) => {
 
     res.status(201).json(incident);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -206,7 +211,7 @@ export const updateIncident = async (req, res) => {
 
     res.json(incident);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -237,7 +242,7 @@ export const deleteIncident = async (req, res) => {
 
     res.json({ message: 'Incident deleted' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -245,12 +250,17 @@ export const deleteIncident = async (req, res) => {
 // @route   GET /api/incidents/user/:userId
 export const getUserIncidents = async (req, res) => {
   try {
+    // Authorization: users can only view their own incidents
+    if (req.params.userId !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to view these incidents' });
+    }
+
     const incidents = await Incident.find({ user: req.params.userId })
       .populate('user', 'username avatar')
       .sort({ createdAt: -1 });
 
     res.json(incidents);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };

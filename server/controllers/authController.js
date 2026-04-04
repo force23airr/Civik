@@ -3,7 +3,7 @@ import User from '../models/User.js';
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 
 // @desc    Register user
@@ -11,6 +11,19 @@ const generateToken = (userId) => {
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    // Validate input types to prevent NoSQL injection
+    if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ message: 'Invalid input' });
+    }
+
+    // Validate password strength
+    if (password.length < 12) {
+      return res.status(400).json({ message: 'Password must be at least 12 characters' });
+    }
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
+      return res.status(400).json({ message: 'Password must contain uppercase, lowercase, and a number' });
+    }
 
     // Check if user exists
     const existingUser = await User.findOne({

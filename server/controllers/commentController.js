@@ -59,7 +59,7 @@ export const getComments = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching comments:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -119,7 +119,7 @@ export const createComment = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating comment:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -158,7 +158,7 @@ export const toggleCommentLike = async (req, res) => {
     });
   } catch (error) {
     console.error('Error toggling comment like:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -203,7 +203,7 @@ export const deleteComment = async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting comment:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -253,7 +253,7 @@ export const flagComment = async (req, res) => {
     });
   } catch (error) {
     console.error('Error flagging comment:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 

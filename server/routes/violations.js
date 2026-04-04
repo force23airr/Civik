@@ -33,6 +33,7 @@ import {
 import { auth, optionalAuth } from '../middleware/auth.js';
 import { moderator } from '../middleware/admin.js';
 import upload from '../middleware/upload.js';
+import { uploadLimiter, generalLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -56,14 +57,14 @@ router.post('/witness-report', auth, createWitnessReportEndpoint);
 router.get('/my-reports', auth, getMyViolationReports);
 
 // Core CRUD operations
-router.post('/', auth, upload.array('evidence', 5), createViolationReport);
+router.post('/', auth, uploadLimiter, upload.array('evidence', 5), createViolationReport);
 router.get('/', optionalAuth, getViolationReports);
 router.get('/:id', optionalAuth, getViolationReportById);
 router.put('/:id', auth, updateViolationReport);
 router.delete('/:id', auth, deleteViolationReport);
 
 // Evidence management
-router.post('/:id/evidence', auth, upload.array('files', 5), addEvidence);
+router.post('/:id/evidence', auth, uploadLimiter, upload.array('files', 5), addEvidence);
 router.get('/:id/evidence-package', auth, downloadEvidencePackage);
 
 // Verification & voting

@@ -38,6 +38,9 @@ const Navbar = () => {
                 Report Parking
               </Link>
               <Link to="/flagged-drivers" className="flagged-link">Flagged Drivers</Link>
+              {user?.role === 'admin' && (
+                <Link to="/admin" className="admin-link">Admin</Link>
+              )}
               <div className="navbar-user">
                 <Link to="/profile" className="user-link">
                   {user?.username}

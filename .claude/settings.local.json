@@ -20,7 +20,10 @@
       "Bash(node -e ':*)",
       "Bash(npx expo-image-placeholder:*)",
       "Bash(npx expo-doctor@latest)",
-      "Bash(npx expo:*)"
+      "Bash(npx expo:*)",
+      "Read(//tmp/**)",
+      "Bash(npx -y acorn-jsx --ecma2020 src/pages/AdminDashboard.jsx)",
+      "Bash(node -e \"try { require\\('@babel/parser'\\).parse\\(require\\('fs'\\).readFileSync\\('src/pages/AdminDashboard.jsx','utf8'\\), {sourceType:'module',plugins:['jsx']}\\); console.log\\('Parse OK'\\) } catch\\(e\\) { console.log\\('Parse error:', e.message\\) }\")"
     ]
   }
 }

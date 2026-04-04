@@ -26,6 +26,8 @@ import PoliceLogin from './pages/PoliceLogin';
 import PoliceDashboard from './pages/PoliceDashboard';
 import ReportParkingViolation from './pages/ReportParkingViolation';
 import MyParkingReports from './pages/MyParkingReports';
+import AdminDashboard from './pages/AdminDashboard';
+import MunicipalPortal from './pages/MunicipalPortal';
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -193,6 +195,26 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyParkingReports />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Dashboard */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Municipal Worker Portal */}
+          <Route
+            path="/municipal"
+            element={
+              <ProtectedRoute>
+                <MunicipalPortal />
               </ProtectedRoute>
             }
           />

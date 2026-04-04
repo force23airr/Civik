@@ -94,7 +94,7 @@ export const createViolationReport = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating violation report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -122,23 +122,47 @@ export const getViolationReports = async (req, res) => {
     if (severity) query.severity = severity;
     if (status) query.status = status;
     if (plateState) query['offendingVehicle.plateState'] = plateState;
-    if (licensePlate) query['offendingVehicle.licensePlate'] = new RegExp(licensePlate, 'i');
+    if (licensePlate) {
+      const escapedPlate = licensePlate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query['offendingVehicle.licensePlate'] = new RegExp(escapedPlate, 'i');
+    }
 
     if (startDate || endDate) {
       query.incidentDateTime = {};
-      if (startDate) query.incidentDateTime.$gte = new Date(startDate);
-      if (endDate) query.incidentDateTime.$lte = new Date(endDate);
+      if (startDate) {
+        const parsedStart = new Date(startDate);
+        if (isNaN(parsedStart.getTime())) return res.status(400).json({ message: 'Invalid start date' });
+        query.incidentDateTime.$gte = parsedStart;
+      }
+      if (endDate) {
+        const parsedEnd = new Date(endDate);
+        if (isNaN(parsedEnd.getTime())) return res.status(400).json({ message: 'Invalid end date' });
+        query.incidentDateTime.$lte = parsedEnd;
+      }
     }
 
     const total = await ViolationReport.countDocuments(query);
     const pages = Math.ceil(total / parseInt(limit));
 
+    // Validate and sanitize sort parameter to prevent NoSQL injection
+    const allowedSortFields = ['createdAt', 'incidentDateTime', 'severity', 'violationType', 'status'];
+    let sanitizedSort = '-createdAt';
+    if (typeof sort === 'string') {
+      const sortField = sort.startsWith('-') ? sort.slice(1) : sort;
+      if (allowedSortFields.includes(sortField)) {
+        sanitizedSort = sort;
+      }
+    }
+
+    const safeLimit = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const safePage = Math.max(parseInt(page) || 1, 1);
+
     const violations = await ViolationReport.find(query)
       .populate('reporter', 'username avatar')
       .select('-chainOfCustody')
-      .sort(sort)
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .sort(sanitizedSort)
+      .limit(safeLimit)
+      .skip((safePage - 1) * safeLimit);
 
     res.json({
       violations,
@@ -151,7 +175,7 @@ export const getViolationReports = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching violation reports:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -197,7 +221,7 @@ export const getMyViolationReports = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching user violation reports:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -228,10 +252,16 @@ export const getViolationReportById = async (req, res) => {
       await violation.save();
     }
 
-    res.json(violation);
+    // Hide chain of custody from non-privileged users (contains IPs and user agents)
+    const violationObj = violation.toObject();
+    if (!req.user || !['admin', 'moderator'].includes(req.user.role)) {
+      delete violationObj.chainOfCustody;
+    }
+
+    res.json(violationObj);
   } catch (error) {
     console.error('Error fetching violation report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -290,7 +320,7 @@ export const updateViolationReport = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating violation report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -320,7 +350,7 @@ export const deleteViolationReport = async (req, res) => {
     res.json({ success: true, message: 'Violation report deleted' });
   } catch (error) {
     console.error('Error deleting violation report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -365,7 +395,7 @@ export const addEvidence = async (req, res) => {
     });
   } catch (error) {
     console.error('Error adding evidence:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -380,6 +410,12 @@ export const downloadEvidencePackage = async (req, res) => {
       return res.status(404).json({ message: 'Violation report not found' });
     }
 
+    // Authorization: only the reporter or admin/moderator can download evidence
+    if (violation.reporter.toString() !== req.user._id.toString()
+        && !['admin', 'moderator'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Not authorized to download this evidence package' });
+    }
+
     const { zipPath, manifestPath, packageHash } = await generatePackage(violation, {
       userId: req.user._id,
       ipAddress: req.ip,
@@ -389,7 +425,7 @@ export const downloadEvidencePackage = async (req, res) => {
     res.download(zipPath, `evidence_package_${violation.reportNumber}.zip`);
   } catch (error) {
     console.error('Error generating evidence package:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -497,7 +533,7 @@ export const voteOnReport = async (req, res) => {
     });
   } catch (error) {
     console.error('Error voting on report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -560,7 +596,7 @@ export const submitRating = async (req, res) => {
     });
   } catch (error) {
     console.error('Error submitting rating:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -607,7 +643,7 @@ export const submitToPoliceEndpoint = async (req, res) => {
     });
   } catch (error) {
     console.error('Error submitting to police:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -628,7 +664,7 @@ export const getPoliceSubmissionStatus = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting police status:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -665,7 +701,7 @@ export const submitToInsurance = async (req, res) => {
     });
   } catch (error) {
     console.error('Error submitting to insurance:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -690,7 +726,7 @@ export const createWitnessReportEndpoint = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating witness report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -729,7 +765,7 @@ export const getModerationQueue = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching moderation queue:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -782,7 +818,7 @@ export const reviewReport = async (req, res) => {
     });
   } catch (error) {
     console.error('Error reviewing report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -801,7 +837,7 @@ export const getTrafficCodes = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching traffic codes:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 
@@ -820,7 +856,7 @@ export const getSpecificCode = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching specific code:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'An error occurred' });
   }
 };
 

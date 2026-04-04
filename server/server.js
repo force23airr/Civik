@@ -25,6 +25,7 @@ import partnerRoutes from './routes/partners.js';
 import violationRoutes from './routes/violations.js';
 import parkingViolationRoutes from './routes/parkingViolations.js';
 import municipalRoutes from './routes/municipal.js';
+import adminRoutes from './routes/admin.js';
 
 // Models for seeding
 import InsurancePartner from './models/InsurancePartner.js';
@@ -49,7 +50,19 @@ const io = new Server(httpServer, {
 connectDB();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',
   credentials: true
@@ -92,6 +105,7 @@ app.use('/api/partners', partnerRoutes);
 app.use('/api/violations', violationRoutes);
 app.use('/api/parking-violations', parkingViolationRoutes);
 app.use('/api/municipal', municipalRoutes);
+app.use('/api/admin', adminRoutes);
 
 // External API routes (v1)
 app.use('/api/v1/insurance', insuranceApiRouter);
@@ -115,14 +129,18 @@ io.use(async (socket, next) => {
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id, 'userId:', socket.userId);
 
-  // Join violation report room for real-time updates
+  // Join violation report room for real-time updates (validate input)
   socket.on('join-violation', (violationId) => {
-    socket.join(`violation-${violationId}`);
+    if (typeof violationId === 'string' && /^[a-f\d]{24}$/i.test(violationId)) {
+      socket.join(`violation-${violationId}`);
+    }
   });
 
-  // Leave violation report room
+  // Leave violation report room (validate input)
   socket.on('leave-violation', (violationId) => {
-    socket.leave(`violation-${violationId}`);
+    if (typeof violationId === 'string' && /^[a-f\d]{24}$/i.test(violationId)) {
+      socket.leave(`violation-${violationId}`);
+    }
   });
 
   socket.on('disconnect', () => {
