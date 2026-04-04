@@ -75,7 +75,7 @@ export const getCaseDetails = async (req, res) => {
 
     // Verify this case was submitted to officer's department
     const submission = violationReport.lawEnforcementSubmissions.find(
-      sub => sub.policeStation._id.toString() === req.department._id.toString()
+      sub => sub.policeStation.toString() === req.department._id.toString()
     );
 
     if (!submission) {
@@ -257,7 +257,7 @@ export const getDepartmentStats = async (req, res) => {
       role: 'police_officer',
       'policeProfile.department': departmentId,
       'policeProfile.isActive': true
-    }).select('username policeProfile.badgeNumber policeProfile.stats');
+    }).select('username policeProfile.stats');
 
     res.json({
       department: req.department.stats,

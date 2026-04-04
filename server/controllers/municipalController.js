@@ -111,9 +111,14 @@ export const getReportStatus = async (req, res) => {
 
     if (!report) return res.status(404).json({ error: 'Report not found' });
 
-    // Only the reporter (or admin/worker) can view
-    if (report.reporter.toString() !== req.user._id.toString() &&
-        !['admin', 'moderator', 'municipal_worker'].includes(req.user.role)) {
+    // Authorization: reporter sees own report, admin sees all,
+    // municipal_worker only sees reports for their department
+    const isReporter = report.reporter.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    const isWorkerForDept = req.user.role === 'municipal_worker' &&
+      req.user.municipalProfile?.department?.toString() === report.department?._id?.toString();
+
+    if (!isReporter && !isAdmin && !isWorkerForDept) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -181,7 +186,7 @@ export const getDepartments = async (req, res) => {
 // ─── Municipal Worker Portal ──────────────────────────────────────────────────
 
 function requireWorker(req, res, next) {
-  if (!['municipal_worker', 'admin', 'moderator'].includes(req.user.role)) {
+  if (!['municipal_worker', 'admin'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Municipal worker access required' });
   }
   next();
@@ -250,10 +255,12 @@ export const workerUpdateReport = async (req, res) => {
     const report = await MunicipalReport.findById(req.params.id);
     if (!report) return res.status(404).json({ error: 'Report not found' });
 
-    // Verify worker belongs to this department
+    // Verify worker belongs to this department — reject if no department assigned
     const workerDept = req.user.municipalProfile?.department?.toString();
-    if (workerDept && report.department?.toString() !== workerDept) {
-      return res.status(403).json({ error: 'This report is not assigned to your department' });
+    if (!workerDept || report.department?.toString() !== workerDept) {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'This report is not assigned to your department' });
+      }
     }
 
     report.status = status;

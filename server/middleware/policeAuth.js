@@ -5,8 +5,9 @@ import PoliceStation from '../models/PoliceStation.js';
 // Verify user is a police officer
 export const requirePoliceOfficer = async (req, res, next) => {
   try {
-    // First check standard auth
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    // Extract token from cookie or header
+    const token = req.cookies?.token ||
+      (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null);
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
     }

@@ -234,7 +234,7 @@ export const getViolationReportById = async (req, res) => {
       .populate('reporter', 'username avatar')
       .populate('chainOfCustody.performedBy', 'username')
       .populate('verification.moderatorReview.reviewedBy', 'username')
-      .populate('lawEnforcementSubmissions.policeStation', 'name email');
+      .populate('lawEnforcementSubmissions.policeStation', 'name');
 
     if (!violation) {
       return res.status(404).json({ message: 'Violation report not found' });
@@ -653,7 +653,7 @@ export const submitToPoliceEndpoint = async (req, res) => {
 export const getPoliceSubmissionStatus = async (req, res) => {
   try {
     const violation = await ViolationReport.findById(req.params.id)
-      .populate('lawEnforcementSubmissions.policeStation', 'name email');
+      .populate('lawEnforcementSubmissions.policeStation', 'name');
 
     if (!violation) {
       return res.status(404).json({ message: 'Violation report not found' });
