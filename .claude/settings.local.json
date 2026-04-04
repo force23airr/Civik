@@ -23,7 +23,17 @@
       "Bash(npx expo:*)",
       "Read(//tmp/**)",
       "Bash(npx -y acorn-jsx --ecma2020 src/pages/AdminDashboard.jsx)",
-      "Bash(node -e \"try { require\\('@babel/parser'\\).parse\\(require\\('fs'\\).readFileSync\\('src/pages/AdminDashboard.jsx','utf8'\\), {sourceType:'module',plugins:['jsx']}\\); console.log\\('Parse OK'\\) } catch\\(e\\) { console.log\\('Parse error:', e.message\\) }\")"
+      "Bash(node -e \"try { require\\('@babel/parser'\\).parse\\(require\\('fs'\\).readFileSync\\('src/pages/AdminDashboard.jsx','utf8'\\), {sourceType:'module',plugins:['jsx']}\\); console.log\\('Parse OK'\\) } catch\\(e\\) { console.log\\('Parse error:', e.message\\) }\")",
+      "Bash(node --check server/server.js)",
+      "Bash(node --check server/controllers/incidentController.js)",
+      "Bash(node --check server/controllers/violationController.js)",
+      "Bash(node --check server/controllers/userController.js)",
+      "Bash(node --check server/controllers/authController.js)",
+      "Bash(node --check server/controllers/commentController.js)",
+      "Bash(node --check server/middleware/auth.js)",
+      "Bash(node --check server/middleware/admin.js)",
+      "Bash(node --check server/routes/auth.js)",
+      "Bash(git check-ignore:*)"
     ]
   }
 }

@@ -1,0 +1,3 @@
+This is Civik, a platform where drivers on the road can report bad drivers, meaning reckless drivers, drivers doing illegal activities. Secondly, a service where you can report on street infrastructure flaws, like potholes etc. and other driving relaued things. This service can basically be an agglomerated data streamline for governments around the world. a crowdsourced software for all types of drivers etc. and just overall a platform that can benefit a variety of parties, like drivers, car insurances, governments, police stations, town halls, old people, retirees, etc. but most importantly to increase safety and accountability. 
+
+
