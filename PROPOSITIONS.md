@@ -38,6 +38,22 @@ SeeClickFix, FixMyStreet, PotholePro — they all failed because they're city-by
 
 ---
 
+## 6. Crowdsourced Data Aggregation — Waze for Everything Else on the Road
+
+Waze crowdsources police sightings. Civik crowdsources everything Waze doesn't — potholes, broken streetlights, flooding, illegal parking, dangerous intersections, building damage, road decay, construction hazards. Every driver becomes a sensor. Every submission becomes a data point.
+
+This isn't just a reporting app. It's a crowdsourced infrastructure intelligence platform. The data compounds into revenue streams nobody else has:
+
+- **Road condition data** → city planners, construction firms, municipal bond analysts
+- **Accident hotspot data** → traffic engineering firms, insurance carriers
+- **Infrastructure decay patterns** → building inspectors, property insurers
+- **Driving behavior data** → auto insurance risk pricing
+- **Real-time hazard feeds** → fleet operators, logistics companies, navigation apps
+
+The audience is Gen Z and younger drivers who already live on their phones, already film everything, and are already driving for Uber/DoorDash. They get paid for data they're generating anyway. Civik just gives it somewhere useful to go.
+
+---
+
 ## Why This Compounds
 
 The data network effects build over time:

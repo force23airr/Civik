@@ -117,6 +117,39 @@ A running list of ideas discussed during development. Not committed to building 
 
 ---
 
+## 7. One-Tap Witness Button — Instant Criminal Activity Reporting
+
+**The idea:** A single button on the app (always accessible, floating or on the main screen) that instantly captures and reports illegal driving activity to the nearest police department.
+
+**What it captures on one tap:**
+- Saves the last 30 seconds of dashcam footage (background recording buffer)
+- Locks GPS coordinates and timestamp
+- Auto-detects license plate from footage
+- Sends directly to nearest police department with chain of custody hash
+
+**What drivers report:**
+- Burnouts / drifting in residential or city areas
+- Street racing
+- Reckless driving / swerving
+- Running red lights or stop signs
+- DUI / erratic behavior
+- Hit and runs
+- Noise disturbance (revving, modified exhaust)
+- Aggressive road rage
+
+**Why it's powerful:**
+- Zero friction — one tap while driving (voice activation option too)
+- Police get timestamped, GPS-tagged, plate-identified evidence instantly
+- Builds trust with law enforcement — they start relying on Civik as a data source
+- Gen Z already films everything — this just makes it useful
+- Creates a safer road culture when drivers know they're being watched by the community
+
+**What's already built:** The report-violation.js mobile screen handles video recording and submission. This feature is an evolution — add background recording buffer, floating action button, and one-tap submit flow.
+
+**Timeline:** Phase 2-3. Needs background video buffer implementation which requires native module work.
+
+---
+
 ## Phased Roadmap
 
 | Phase | Timeline | Focus |
