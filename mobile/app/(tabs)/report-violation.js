@@ -37,7 +37,7 @@ export default function ReportViolationScreen() {
   const [licensePlate, setLicensePlate] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(null);
 
   const startRecording = async () => {
     if (!cameraRef.current) return;
@@ -48,7 +48,7 @@ export default function ReportViolationScreen() {
       setVideoUri(video.uri);
       setMode('form');
     } catch (err) {
-      console.log('Recording error:', err);
+      if (__DEV__) console.log('Recording error:', err);
     } finally {
       setIsRecording(false);
     }
@@ -83,36 +83,67 @@ export default function ReportViolationScreen() {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude
       });
+      const stateCode = geo?.region
+        ? (geo.region.includes(' ')
+          ? geo.region.split(/\s+/).map(part => part[0]).join('').slice(0, 2)
+          : geo.region.slice(0, 2)
+        ).toUpperCase()
+        : 'XX';
 
       const formData = new FormData();
       if (videoUri) {
-        formData.append('media', {
+        formData.append('evidence', {
           uri: videoUri,
           name: 'evidence.mp4',
           type: 'video/mp4'
         });
       }
 
+      const streetAddress = `${geo?.streetNumber || ''} ${geo?.street || ''}`.trim();
+      const fullAddress = [
+        streetAddress,
+        geo?.city,
+        geo?.region,
+        geo?.postalCode
+      ].filter(Boolean).join(', ');
+
       formData.append('violationType', violationType);
       formData.append('severity', 'severe');
-      formData.append('lat', location.coords.latitude.toString());
-      formData.append('lng', location.coords.longitude.toString());
-      formData.append('address', `${geo?.streetNumber || ''} ${geo?.street || ''}, ${geo?.city || ''}, ${geo?.region || ''}`.trim());
-      formData.append('licensePlate', licensePlate.toUpperCase() || 'UNKNOWN');
-      formData.append('plateState', geo?.region?.substring(0, 2).toUpperCase() || 'XX');
-      formData.append('description', description || 'Reported via Civik mobile app');
+      formData.append('offendingVehicle', JSON.stringify({
+        licensePlate: licensePlate.trim().toUpperCase() || 'UNKNOWN',
+        plateState: stateCode,
+        plateCountry: 'US'
+      }));
+      formData.append('location', JSON.stringify({
+        address: fullAddress || 'Location captured from device',
+        city: geo?.city || '',
+        state: stateCode,
+        zipCode: geo?.postalCode || '',
+        lat: location.coords.latitude,
+        lng: location.coords.longitude
+      }));
       formData.append('incidentDateTime', new Date().toISOString());
-      formData.append('tosAccepted', 'true');
-      formData.append('certifyTruthful', 'true');
+      formData.append('description', description || 'Reported via Civik mobile app');
+      formData.append('reporterVehicle', JSON.stringify({
+        wasInvolved: false
+      }));
+      formData.append('consent', JSON.stringify({
+        tosAccepted: true,
+        certifyTruthful: true,
+        authorizePoliceContact: true,
+        authorizeInsuranceReport: false,
+        willingToTestify: false
+      }));
 
-      await client.post('/incidents', formData, {
+      const response = await client.post('/violations', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setSubmitted(true);
+      setSubmitted(response.data.violationReport);
     } catch (err) {
-      Alert.alert('Submission Failed', err.response?.data?.error || 'Please try again.');
+      const serverMsg = err.response?.data?.message || err.response?.data?.error;
+      Alert.alert('Submission Failed', serverMsg || 'Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -124,8 +155,9 @@ export default function ReportViolationScreen() {
         <View style={styles.successContainer}>
           <Ionicons name="checkmark-circle" size={72} color="#22c55e" />
           <Text style={styles.successTitle}>Report Submitted!</Text>
+          <Text style={styles.successText}>{submitted.reportNumber}</Text>
           <Text style={styles.successText}>Your driving violation report has been submitted. Thank you for making roads safer.</Text>
-          <TouchableOpacity style={styles.newReportBtn} onPress={() => { setSubmitted(false); setMode('camera'); setVideoUri(null); setViolationType(''); }}>
+          <TouchableOpacity style={styles.newReportBtn} onPress={() => { setSubmitted(null); setMode('camera'); setVideoUri(null); setViolationType(''); setLicensePlate(''); setDescription(''); }}>
             <Text style={styles.newReportText}>Report Another</Text>
           </TouchableOpacity>
         </View>

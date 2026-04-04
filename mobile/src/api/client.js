@@ -1,11 +1,20 @@
 import axios from 'axios';
+import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 
-// Change this to your production server URL before App Store submission
-// For local dev with Expo Go: use your machine's local IP (not localhost)
-const BASE_URL = __DEV__
-  ? 'http://10.0.0.37:5001/api'
-  : 'https://civik.onrender.com/api';  // production API on Render
+const configuredApiUrl =
+  process.env.EXPO_PUBLIC_API_URL ||
+  Constants.expoConfig?.extra?.apiUrl ||
+  Constants.manifest2?.extra?.expoClient?.extra?.apiUrl;
+
+export const BASE_URL = configuredApiUrl || 'https://civik.onrender.com/api';
+export const API_ORIGIN = BASE_URL.replace(/\/api\/?$/, '');
+
+export const getAssetUrl = (assetPath) => {
+  if (!assetPath) return null;
+  if (/^https?:\/\//i.test(assetPath)) return assetPath;
+  return `${API_ORIGIN}${assetPath.startsWith('/') ? assetPath : `/${assetPath}`}`;
+};
 
 const client = axios.create({
   baseURL: BASE_URL,

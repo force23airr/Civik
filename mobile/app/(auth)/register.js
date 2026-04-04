@@ -24,8 +24,12 @@ export default function RegisterScreen() {
       Alert.alert('Password Mismatch', 'Passwords do not match.');
       return;
     }
-    if (form.password.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters.');
+    if (form.password.length < 12) {
+      Alert.alert('Weak Password', 'Password must be at least 12 characters.');
+      return;
+    }
+    if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/\d/.test(form.password)) {
+      Alert.alert('Weak Password', 'Password must contain uppercase, lowercase, and a number.');
       return;
     }
 
@@ -34,7 +38,11 @@ export default function RegisterScreen() {
       await register(form.username.trim(), form.email.trim().toLowerCase(), form.password);
       router.replace('/(tabs)');
     } catch (err) {
-      Alert.alert('Registration Failed', err.response?.data?.error || 'Could not create account.');
+      const serverMsg = err.response?.data?.message || err.response?.data?.error;
+      Alert.alert(
+        'Registration Failed',
+        serverMsg || 'Could not create account. Please try again.'
+      );
     } finally {
       setLoading(false);
     }

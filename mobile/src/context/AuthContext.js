@@ -6,7 +6,6 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Restore session on app launch
@@ -18,12 +17,12 @@ export function AuthProvider({ children }) {
     try {
       const storedToken = await SecureStore.getItemAsync('civik_token');
       if (storedToken) {
-        setToken(storedToken);
         const res = await client.get('/auth/me');
-        setUser(res.data);
+        setUser(res.data.user);
       }
     } catch {
       await SecureStore.deleteItemAsync('civik_token');
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -32,8 +31,10 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const res = await client.post('/auth/login', { email, password });
     const { token: newToken, user: newUser } = res.data;
+    if (!newToken || !newUser) {
+      throw new Error('Invalid server response');
+    }
     await SecureStore.setItemAsync('civik_token', newToken);
-    setToken(newToken);
     setUser(newUser);
     return newUser;
   };
@@ -41,20 +42,26 @@ export function AuthProvider({ children }) {
   const register = async (username, email, password) => {
     const res = await client.post('/auth/register', { username, email, password });
     const { token: newToken, user: newUser } = res.data;
+    if (!newToken || !newUser) {
+      throw new Error('Invalid server response');
+    }
     await SecureStore.setItemAsync('civik_token', newToken);
-    setToken(newToken);
     setUser(newUser);
     return newUser;
   };
 
   const logout = async () => {
+    try {
+      await client.post('/auth/logout');
+    } catch {
+      // Clear local session even if the server-side cookie clear fails.
+    }
     await SecureStore.deleteItemAsync('civik_token');
-    setToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

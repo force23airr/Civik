@@ -69,7 +69,7 @@ export default function ReportInfrastructureScreen() {
       const res = await api.get('/municipal/jurisdictions?state=FL');
       setCounties(res.data.counties || []);
     } catch (e) {
-      console.warn('Could not load jurisdictions', e.message);
+      if (__DEV__) console.warn('Could not load jurisdictions', e.message);
     } finally {
       setLoadingJurisdictions(false);
     }
@@ -91,7 +91,7 @@ export default function ReportInfrastructureScreen() {
         }
       }
     } catch (e) {
-      console.warn('Location error', e.message);
+      if (__DEV__) console.warn('Location error', e.message);
     } finally {
       setLocating(false);
     }
@@ -203,7 +203,8 @@ export default function ReportInfrastructureScreen() {
         [{ text: 'Done', onPress: resetForm }]
       );
     } catch (e) {
-      Alert.alert('Error', e.response?.data?.message || 'Submission failed');
+      const serverMsg = e.response?.data?.message || e.response?.data?.error;
+      Alert.alert('Submission Failed', serverMsg || 'Please try again.');
     } finally {
       setSubmitting(false);
     }

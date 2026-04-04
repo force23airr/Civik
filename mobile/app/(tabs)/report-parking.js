@@ -93,7 +93,7 @@ export default function ReportParkingScreen() {
         setNearestStation(stationRes.data.station);
       }
     } catch (err) {
-      console.log('Location error:', err.message);
+      if (__DEV__) console.log('Location error:', err.message);
     } finally {
       setLocationLoading(false);
     }
@@ -165,6 +165,9 @@ export default function ReportParkingScreen() {
       formData.append('lat', location.lat.toString());
       formData.append('lng', location.lng.toString());
       formData.append('address', address);
+      if (nearestStation?.address?.city) formData.append('city', nearestStation.address.city);
+      if (nearestStation?.address?.state) formData.append('state', nearestStation.address.state);
+      if (nearestStation?.address?.zipCode) formData.append('zipCode', nearestStation.address.zipCode);
       if (licensePlate) formData.append('licensePlate', licensePlate.toUpperCase());
       if (color) formData.append('color', color);
       if (make) formData.append('make', make);
@@ -177,7 +180,8 @@ export default function ReportParkingScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSubmitted(res.data);
     } catch (err) {
-      Alert.alert('Submission Failed', err.response?.data?.error || 'Please try again.');
+      const serverMsg = err.response?.data?.message || err.response?.data?.error;
+      Alert.alert('Submission Failed', serverMsg || 'Please try again.');
     } finally {
       setSubmitting(false);
     }

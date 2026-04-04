@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import client from '../../src/api/client';
+import client, { getAssetUrl } from '../../src/api/client';
 
 const STATUS_FILTERS = ['all', 'submitted', 'approved', 'denied'];
 
@@ -43,7 +43,7 @@ export default function MyReportsScreen() {
       setReports(prev => reset ? newReports : [...prev, ...newReports]);
       setHasMore(pageNum < res.data.pages);
     } catch (err) {
-      console.log('My reports error:', err.message);
+      if (__DEV__) console.log('My reports error:', err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -84,7 +84,7 @@ export default function MyReportsScreen() {
           {item.photos.slice(0, 4).map((photo, i) => (
             <Image
               key={i}
-              source={{ uri: `/uploads/${photo.filename}` }}
+              source={{ uri: getAssetUrl(photo.path || `/uploads/${photo.filename}`) }}
               style={styles.thumb}
             />
           ))}

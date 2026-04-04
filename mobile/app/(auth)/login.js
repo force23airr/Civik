@@ -26,7 +26,11 @@ export default function LoginScreen() {
       await login(email.trim().toLowerCase(), password);
       router.replace('/(tabs)');
     } catch (err) {
-      Alert.alert('Login Failed', err.response?.data?.error || 'Invalid credentials. Please try again.');
+      const serverMsg = err.response?.data?.message || err.response?.data?.error;
+      Alert.alert(
+        'Login Failed',
+        serverMsg || 'Invalid credentials. Please try again.'
+      );
     } finally {
       setLoading(false);
     }

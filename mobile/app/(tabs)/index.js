@@ -24,13 +24,13 @@ export default function DashboardScreen() {
   const loadData = async () => {
     try {
       const [rewardsRes, parkingRes] = await Promise.all([
-        client.get('/rewards/balance').catch(() => ({ data: { balance: 0 } })),
+        client.get('/rewards/dashboard').catch(() => ({ data: { balance: { available: 0 } } })),
         client.get('/parking-violations/my-reports?limit=5').catch(() => ({ data: { reports: [] } }))
       ]);
       setRewards(rewardsRes.data);
       setParkingReports(parkingRes.data.reports || []);
     } catch (err) {
-      console.log('Dashboard load error:', err.message);
+      if (__DEV__) console.log('Dashboard load error:', err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -59,7 +59,7 @@ export default function DashboardScreen() {
     );
   }
 
-  const balance = rewards?.balance || 0;
+  const balance = rewards?.balance?.available || 0;
   const balanceDollars = (balance / 100).toFixed(2);
 
   return (
