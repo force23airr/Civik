@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 // For local dev with Expo Go: use your machine's local IP (not localhost)
 const BASE_URL = __DEV__
   ? 'http://10.0.0.37:5001/api'
-  : 'https://api.civik.com/api';  // your production API
+  : 'https://civik.onrender.com/api';  // production API on Render
 
 const client = axios.create({
   baseURL: BASE_URL,
