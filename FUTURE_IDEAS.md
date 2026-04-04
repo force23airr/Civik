@@ -1,4 +1,4 @@
-# DashGuard — Future Ideas & Roadmap Concepts
+# Civik — Future Ideas & Roadmap Concepts
 
 A running list of ideas discussed during development. Not committed to building these yet — captured here so nothing gets lost.
 
@@ -6,7 +6,7 @@ A running list of ideas discussed during development. Not committed to building 
 
 ## 1. NVIDIA Jetson Orin Dashcam Device
 
-**The idea:** A DashGuard-branded dashcam with an NVIDIA Jetson Orin chip inside. Plug it in, it runs AI models on-device in real time while the driver works. No user input needed.
+**The idea:** A Civik-branded dashcam with an NVIDIA Jetson Orin chip inside. Plug it in, it runs AI models on-device in real time while the driver works. No user input needed.
 
 **What it detects passively:**
 - Potholes and road damage — GPS coordinate locked the moment it's detected
@@ -32,7 +32,7 @@ A running list of ideas discussed during development. Not committed to building 
 - Metropolis — smart city video analytics platform, built for exactly this
 - DeepStream SDK — runs multiple AI models simultaneously on Jetson hardware
 - Pre-trained models — plate recognition, object detection, road anomaly detection, ready to deploy
-- TAO Toolkit — fine-tune models on DashGuard's own dataset once we have volume
+- TAO Toolkit — fine-tune models on Civik's own dataset once we have volume
 
 **Realistic timeline:** 12–18 months out. Design toward it — the backend already supports it (GPS, timestamp, media, auto-routing).
 
@@ -40,11 +40,11 @@ A running list of ideas discussed during development. Not committed to building 
 
 ## 2. AI Pothole Detection + Contractor Auction Marketplace
 
-**The idea:** When a user submits a pothole photo, an AI model validates it (confirms it's actually a pothole, rates severity), locks the GPS coordinates, and lists it as a job. Road repair contractors bid on it. Municipality accepts the best bid. Contractor fixes it, submits proof photos, gets paid. DashGuard takes a platform fee.
+**The idea:** When a user submits a pothole photo, an AI model validates it (confirms it's actually a pothole, rates severity), locks the GPS coordinates, and lists it as a job. Road repair contractors bid on it. Municipality accepts the best bid. Contractor fixes it, submits proof photos, gets paid. Civik takes a platform fee.
 
 **Why it's valuable:**
 - Closes the full loop: report → confirmed → fixed → citizen notified
-- Turns DashGuard into a procurement platform for municipalities, not just a reporting tool
+- Turns Civik into a procurement platform for municipalities, not just a reporting tool
 - Platform fee (8–15%) on every contract = real B2B revenue
 - Essentially Thumbtack/Angi but specifically for municipal infrastructure with citizen-sourced demand
 
@@ -75,13 +75,13 @@ A running list of ideas discussed during development. Not committed to building 
 - Driving behavior scores on Uber/gig drivers (huge market — insurers price fleet policies on this)
 - Incident history linked to specific plates
 
-**Why it works:** DashGuard already collects this data as a byproduct of the core product. Licensing it is a zero-marginal-cost revenue stream.
+**Why it works:** Civik already collects this data as a byproduct of the core product. Licensing it is a zero-marginal-cost revenue stream.
 
 ---
 
 ## 4. Real-Time City Road Intelligence Subscriptions
 
-**The idea:** Municipalities pay a monthly fee for a live dashboard showing road conditions across their city — updated daily from DashGuard driver reports and eventually Jetson device data.
+**The idea:** Municipalities pay a monthly fee for a live dashboard showing road conditions across their city — updated daily from Civik driver reports and eventually Jetson device data.
 
 **What the dashboard shows:**
 - Live pothole map with severity ratings and report counts
@@ -89,25 +89,25 @@ A running list of ideas discussed during development. Not committed to building 
 - Flooding and weather hazard zones
 - Trending problem areas by neighborhood
 
-**Why cities pay:** Their current process is reactive (wait for complaints). DashGuard gives them a proactive view. Budget-cycle justification writes itself.
+**Why cities pay:** Their current process is reactive (wait for complaints). Civik gives them a proactive view. Budget-cycle justification writes itself.
 
 ---
 
 ## 5. Driver Insurance Discount Program
 
-**The idea:** Partner with insurance companies to offer premium discounts to DashGuard users with clean verified driving records.
+**The idea:** Partner with insurance companies to offer premium discounts to Civik users with clean verified driving records.
 
 **How it works:**
 - User opts in to share their driving data with an insurance partner
-- DashGuard's AI scores their driving behavior from dashcam footage
+- Civik's AI scores their driving behavior from dashcam footage
 - Clean score = discount on premium
-- Creates a strong incentive to install DashGuard and keep it running
+- Creates a strong incentive to install Civik and keep it running
 
 ---
 
 ## 6. Fleet Management B2B Product
 
-**The idea:** Sell DashGuard to logistics companies (delivery fleets, trucking, taxi companies) as a fleet safety and compliance tool.
+**The idea:** Sell Civik to logistics companies (delivery fleets, trucking, taxi companies) as a fleet safety and compliance tool.
 
 **What it offers:**
 - Real-time driver behavior monitoring across the whole fleet

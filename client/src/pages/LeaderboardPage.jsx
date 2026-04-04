@@ -52,7 +52,7 @@ const LeaderboardPage = () => {
         {!isAuthenticated && (
           <div className="cta-banner">
             <h2>Want to see your name here?</h2>
-            <p>Join DashGuard and start earning credits for your dash cam footage.</p>
+            <p>Join Civik and start earning credits for your dash cam footage.</p>
             <Link to="/get-rewarded" className="btn btn-primary btn-lg">
               Learn How to Earn
             </Link>

@@ -82,7 +82,7 @@ const rewardSchema = new mongoose.Schema({
     datasetId: String,
     datasetName: String,
     saleAmount: Number,           // Total sale amount in cents
-    platformFee: Number,          // DashGuard's cut
+    platformFee: Number,          // Civik's cut
     contributorPool: Number,      // Total pool for contributors
     userContributionPercent: Number, // User's % of dataset
     userShare: Number             // User's share of pool

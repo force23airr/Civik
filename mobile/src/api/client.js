@@ -4,8 +4,8 @@ import * as SecureStore from 'expo-secure-store';
 // Change this to your production server URL before App Store submission
 // For local dev with Expo Go: use your machine's local IP (not localhost)
 const BASE_URL = __DEV__
-  ? 'http://YOUR_LOCAL_IP:5001/api'   // e.g. 'http://192.168.1.100:5001/api'
-  : 'https://api.dashguard.com/api';  // your production API
+  ? 'http://10.0.0.37:5001/api'
+  : 'https://api.civik.com/api';  // your production API
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -15,7 +15,7 @@ const client = axios.create({
 
 // Attach JWT token to every request
 client.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync('dashguard_token');
+  const token = await SecureStore.getItemAsync('civik_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -27,7 +27,7 @@ client.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      await SecureStore.deleteItemAsync('dashguard_token');
+      await SecureStore.deleteItemAsync('civik_token');
     }
     return Promise.reject(error);
   }

@@ -100,7 +100,7 @@ export default function ReportViolationScreen() {
       formData.append('address', `${geo?.streetNumber || ''} ${geo?.street || ''}, ${geo?.city || ''}, ${geo?.region || ''}`.trim());
       formData.append('licensePlate', licensePlate.toUpperCase() || 'UNKNOWN');
       formData.append('plateState', geo?.region?.substring(0, 2).toUpperCase() || 'XX');
-      formData.append('description', description || 'Reported via DashGuard mobile app');
+      formData.append('description', description || 'Reported via Civik mobile app');
       formData.append('incidentDateTime', new Date().toISOString());
       formData.append('tosAccepted', 'true');
       formData.append('certifyTruthful', 'true');

@@ -269,7 +269,7 @@ export default function ReportParkingScreen() {
             <Ionicons name="camera-outline" size={64} color="#3b82f6" />
             <Text style={styles.permissionTitle}>Camera Access Needed</Text>
             <Text style={styles.permissionText}>
-              DashGuard needs your camera to capture parking violations.
+              Civik needs your camera to capture parking violations.
             </Text>
             <TouchableOpacity style={styles.permissionBtn} onPress={requestCameraPermission}>
               <Text style={styles.permissionBtnText}>Allow Camera</Text>

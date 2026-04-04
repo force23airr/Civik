@@ -126,7 +126,7 @@ export const getReportStatus = async (req, res) => {
 /**
  * GET /api/municipal/departments
  * Public list of all municipalities — used for "Coverage" page showing
- * users which cities DashGuard is connected to.
+ * users which cities Civik is connected to.
  */
 export const getDepartments = async (req, res) => {
   try {

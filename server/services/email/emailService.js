@@ -41,7 +41,7 @@ export async function sendPoliceReport(policeStation, incident, pdfPath, options
   const incidentDate = new Date(incident.createdAt).toLocaleDateString();
   const incidentType = formatType(incident.type);
 
-  const subject = `DashGuard Incident Report - ${incidentType} - ${incidentDate} - Ref: ${reportId}`;
+  const subject = `Civik Incident Report - ${incidentType} - ${incidentDate} - Ref: ${reportId}`;
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -62,14 +62,14 @@ export async function sendPoliceReport(policeStation, incident, pdfPath, options
 </head>
 <body>
   <div class="header">
-    <h1>DashGuard Incident Report</h1>
+    <h1>Civik Incident Report</h1>
     <p>Community Dash Cam Safety Platform</p>
   </div>
 
   <div class="content">
     <p>Dear ${policeStation.contactPerson?.name || policeStation.name},</p>
 
-    <p>A new incident has been reported through the DashGuard platform that falls within your jurisdiction.</p>
+    <p>A new incident has been reported through the Civik platform that falls within your jurisdiction.</p>
 
     <div class="summary-box">
       <h3>Incident Summary</h3>
@@ -96,21 +96,21 @@ export async function sendPoliceReport(policeStation, incident, pdfPath, options
 
     <p>If you have any questions or need additional information, please contact our support team.</p>
 
-    <p>Best regards,<br>DashGuard Team</p>
+    <p>Best regards,<br>Civik Team</p>
   </div>
 
   <div class="footer">
-    <p><strong>Disclaimer:</strong> This report was generated automatically by the DashGuard platform.
-    The accuracy of the information depends on user submissions. DashGuard is not responsible for
+    <p><strong>Disclaimer:</strong> This report was generated automatically by the Civik platform.
+    The accuracy of the information depends on user submissions. Civik is not responsible for
     the accuracy of incident details provided by users.</p>
-    <p>© ${new Date().getFullYear()} DashGuard - Community Dash Cam Safety Platform</p>
+    <p>© ${new Date().getFullYear()} Civik - Community Dash Cam Safety Platform</p>
   </div>
 </body>
 </html>
   `;
 
   const textBody = `
-DASHGUARD INCIDENT REPORT
+CIVIK INCIDENT REPORT
 =========================
 
 Report ID: ${reportId}
@@ -118,7 +118,7 @@ Date Generated: ${new Date().toLocaleString()}
 
 Dear ${policeStation.contactPerson?.name || policeStation.name},
 
-A new incident has been reported through the DashGuard platform.
+A new incident has been reported through the Civik platform.
 
 INCIDENT SUMMARY
 ----------------
@@ -140,15 +140,15 @@ ${incident.mediaFiles?.length > 0 ? `EVIDENCE: ${incident.mediaFiles.length} med
 The full incident report is attached to this email as a PDF document.
 
 Best regards,
-DashGuard Team
+Civik Team
 
 ---
-Disclaimer: This report was generated automatically by the DashGuard platform.
-© ${new Date().getFullYear()} DashGuard - Community Dash Cam Safety Platform
+Disclaimer: This report was generated automatically by the Civik platform.
+© ${new Date().getFullYear()} Civik - Community Dash Cam Safety Platform
   `;
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'DashGuard <noreply@dashguard.com>',
+    from: process.env.EMAIL_FROM || 'Civik <noreply@civik.com>',
     to: policeStation.email,
     subject: subject,
     text: textBody,
@@ -159,7 +159,7 @@ Disclaimer: This report was generated automatically by the DashGuard platform.
   // Attach PDF if path provided
   if (pdfPath && fs.existsSync(pdfPath)) {
     mailOptions.attachments.push({
-      filename: `DashGuard-Report-${reportId}.pdf`,
+      filename: `Civik-Report-${reportId}.pdf`,
       path: pdfPath,
       contentType: 'application/pdf'
     });
@@ -204,14 +204,14 @@ export async function sendClaimNotification(recipientEmail, claim, type = 'submi
   };
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'DashGuard <noreply@dashguard.com>',
+    from: process.env.EMAIL_FROM || 'Civik <noreply@civik.com>',
     to: recipientEmail,
     subject: subjects[type] || subjects['update'],
-    text: `Your insurance claim (${claim.claimId}) has been ${type}. Log in to DashGuard to view details.`,
+    text: `Your insurance claim (${claim.claimId}) has been ${type}. Log in to Civik to view details.`,
     html: `
       <h2>Insurance Claim ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
       <p>Your insurance claim with ID <strong>${claim.claimId}</strong> has been ${type}.</p>
-      <p>Log in to DashGuard to view full details and next steps.</p>
+      <p>Log in to Civik to view full details and next steps.</p>
     `
   };
 

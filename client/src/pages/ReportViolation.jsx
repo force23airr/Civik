@@ -621,7 +621,7 @@ function ReportViolation() {
                     <span>I accept the Terms of Service *</span>
                   </label>
                   <p className="consent-description">
-                    You agree to DashGuard's terms of service for submitting violation reports.
+                    You agree to Civik's terms of service for submitting violation reports.
                   </p>
                 </div>
 

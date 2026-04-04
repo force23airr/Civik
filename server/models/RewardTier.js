@@ -133,7 +133,7 @@ rewardTierSchema.statics.seedDefaultTiers = async function() {
     {
       name: 'bronze',
       displayName: 'Bronze Contributor',
-      description: 'Getting started with DashGuard',
+      description: 'Getting started with Civik',
       icon: '🥉',
       color: '#CD7F32',
       order: 1,

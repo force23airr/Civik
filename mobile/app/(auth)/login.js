@@ -38,7 +38,7 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Ionicons name="car-sport" size={56} color="#3b82f6" />
-            <Text style={styles.brand}>DashGuard</Text>
+            <Text style={styles.brand}>Civik</Text>
             <Text style={styles.tagline}>Report violations. Earn rewards.</Text>
           </View>
 

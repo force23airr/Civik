@@ -1,4 +1,4 @@
-# DashGuard
+# Civik
 
 A community-driven dash cam platform where drivers can upload footage, report incidents, and alert others about dangerous driving, crime, and security concerns in real-time.
 
@@ -36,8 +36,8 @@ A community-driven dash cam platform where drivers can upload footage, report in
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/force23airr/dashguard.git
-   cd dashguard
+   git clone https://github.com/force23airr/civik.git
+   cd civik
    ```
 
 2. Install dependencies:
@@ -50,7 +50,7 @@ A community-driven dash cam platform where drivers can upload footage, report in
    Edit `server/.env` with your settings:
    ```
    PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/dashguard
+   MONGODB_URI=mongodb://localhost:27017/civik
    JWT_SECRET=your_secret_key_here
    ```
 
@@ -66,7 +66,7 @@ A community-driven dash cam platform where drivers can upload footage, report in
 ## Project Structure
 
 ```
-dashguard/
+civik/
 ├── client/                 # React frontend
 │   ├── src/
 │   │   ├── components/     # Reusable UI components

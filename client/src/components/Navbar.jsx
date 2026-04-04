@@ -16,7 +16,7 @@ const Navbar = () => {
       <div className="container navbar-container">
         <Link to="/" className="navbar-brand">
           <span className="brand-icon">&#128663;</span>
-          DashGuard
+          Civik
         </Link>
 
         <div className="navbar-links">

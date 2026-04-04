@@ -37,7 +37,7 @@ const Login = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h1>Welcome Back</h1>
-        <p className="auth-subtitle">Sign in to your DashGuard account</p>
+        <p className="auth-subtitle">Sign in to your Civik account</p>
 
         {error && <div className="auth-error">{error}</div>}
 

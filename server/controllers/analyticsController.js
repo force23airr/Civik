@@ -290,7 +290,7 @@ export const downloadExport = async (req, res) => {
       return res.status(404).json({ message: 'Export file not found' });
     }
 
-    const filename = `dashguard-export-${job.jobId}.${job.format}`;
+    const filename = `civik-export-${job.jobId}.${job.format}`;
     res.download(filePath, filename);
   } catch (error) {
     res.status(500).json({ message: error.message });

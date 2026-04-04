@@ -177,7 +177,7 @@ export default function ReportInfrastructureScreen() {
 
       const formData = new FormData();
       formData.append('title', `${selectedIssue.label} Report`);
-      formData.append('description', description || `${selectedIssue.label} reported via DashGuard`);
+      formData.append('description', description || `${selectedIssue.label} reported via Civik`);
       formData.append('type', selectedIssue.type);
       formData.append('severity', 'medium');
       formData.append('location', JSON.stringify(locationObj));

@@ -132,13 +132,13 @@ async function sendToInsurer(report, insurerInfo) {
 <body>
   <div class="header">
     <h1>Traffic Violation Report</h1>
-    <p>DashGuard Community Safety Platform</p>
+    <p>Civik Community Safety Platform</p>
   </div>
 
   <div class="content">
     <p>Dear ${insurerInfo.name} Claims Department,</p>
 
-    <p>This report documents a traffic violation by an insured driver, submitted by a witness through the DashGuard platform.</p>
+    <p>This report documents a traffic violation by an insured driver, submitted by a witness through the Civik platform.</p>
 
     <div class="alert-box">
       <h3>Vehicle of Interest</h3>
@@ -180,12 +180,12 @@ async function sendToInsurer(report, insurerInfo) {
 
     <p>For questions or to access the full evidence package, please contact us.</p>
 
-    <p>Best regards,<br>DashGuard Insurance Reporting Team</p>
+    <p>Best regards,<br>Civik Insurance Reporting Team</p>
   </div>
 
   <div class="footer">
     <p><strong>Notice:</strong> This report is submitted in good faith by a community member. The evidence has been preserved with cryptographic integrity verification. All information is subject to verification.</p>
-    <p>&copy; ${new Date().getFullYear()} DashGuard - Community Safety Platform</p>
+    <p>&copy; ${new Date().getFullYear()} Civik - Community Safety Platform</p>
   </div>
 </body>
 </html>
@@ -199,7 +199,7 @@ Report Number: ${report.reportNumber}
 
 Dear ${insurerInfo.name} Claims Department,
 
-This report documents a traffic violation submitted through the DashGuard platform.
+This report documents a traffic violation submitted through the Civik platform.
 
 VEHICLE OF INTEREST
 -------------------
@@ -221,11 +221,11 @@ ${report.description}
 Evidence files: ${report.evidence?.length || 0} file(s) with verified integrity hashes
 
 ---
-© ${new Date().getFullYear()} DashGuard - Community Safety Platform
+© ${new Date().getFullYear()} Civik - Community Safety Platform
   `;
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'DashGuard <noreply@dashguard.com>',
+    from: process.env.EMAIL_FROM || 'Civik <noreply@civik.com>',
     to: insurerInfo.email,
     subject: subject,
     text: textBody,

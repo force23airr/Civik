@@ -46,7 +46,7 @@ export default function RegisterScreen() {
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Ionicons name="car-sport" size={48} color="#3b82f6" />
-            <Text style={styles.brand}>DashGuard</Text>
+            <Text style={styles.brand}>Civik</Text>
           </View>
 
           <View style={styles.card}>

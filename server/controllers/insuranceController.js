@@ -92,7 +92,7 @@ export const submitWitnessReport = async (req, res) => {
 
     incident.witnesses.push({
       user: req.user._id,
-      statement: description || 'Witness report submitted via DashGuard',
+      statement: description || 'Witness report submitted via Civik',
       submittedAt: new Date()
     });
 
@@ -327,9 +327,9 @@ export const getClaimJSON = async (req, res) => {
     const claimDocument = {
       documentInfo: {
         version: '1.0',
-        format: 'DashGuard-ACORD',
+        format: 'Civik-ACORD',
         generatedAt: new Date().toISOString(),
-        source: 'DashGuard Platform'
+        source: 'Civik Platform'
       },
       claim: {
         claimId: claim.claimId,

@@ -130,9 +130,9 @@ async function submitViaOpen311(dept, incident, report) {
     lat: incident.location.lat.toString(),
     long: incident.location.lng.toString(),
     address_string: incident.location.address || `${incident.location.city}, ${incident.location.state}`,
-    description: `[DashGuard Report ${incident._id}] ${incident.title}: ${incident.description}`.slice(0, 4000),
-    email: 'reports@dashguard.app',
-    first_name: 'DashGuard',
+    description: `[Civik Report ${incident._id}] ${incident.title}: ${incident.description}`.slice(0, 4000),
+    email: 'reports@civik.app',
+    first_name: 'Civik',
     last_name: 'Platform'
   });
 
@@ -177,12 +177,12 @@ async function submitViaEmail(dept, incident, report) {
       })
     : null;
 
-  const subject = `[DashGuard] ${formatType(incident.type)} Report — ${incident.location.address || `${incident.location.city}, ${incident.location.state}`}`;
+  const subject = `[Civik] ${formatType(incident.type)} Report — ${incident.location.address || `${incident.location.city}, ${incident.location.state}`}`;
 
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
       <div style="background:#1a1a2e;padding:20px;border-radius:8px 8px 0 0">
-        <h2 style="color:#3b82f6;margin:0">DashGuard Citizen Report</h2>
+        <h2 style="color:#3b82f6;margin:0">Civik Citizen Report</h2>
         <p style="color:#94a3b8;margin:4px 0 0">Auto-routed from ${incident.location.city || 'Unknown City'}, ${incident.location.state || ''}</p>
       </div>
       <div style="background:#f8fafc;padding:20px;border:1px solid #e2e8f0">
@@ -196,18 +196,18 @@ async function submitViaEmail(dept, incident, report) {
           ${incident.mediaFiles?.length ? `<tr><td style="padding:8px;font-weight:bold;color:#374151">Evidence</td><td style="padding:8px;color:#111827">${incident.mediaFiles.length} file(s) attached</td></tr>` : ''}
         </table>
         <div style="margin-top:16px;padding:12px;background:#dbeafe;border-radius:6px">
-          <p style="margin:0;font-size:13px;color:#1e40af">This report was automatically routed to your department by DashGuard (dashguard.app). Citizens can track the status of this report. Please update the ticket status at your earliest convenience.</p>
+          <p style="margin:0;font-size:13px;color:#1e40af">This report was automatically routed to your department by Civik (civik.app). Citizens can track the status of this report. Please update the ticket status at your earliest convenience.</p>
         </div>
       </div>
       <div style="background:#1e293b;padding:12px;border-radius:0 0 8px 8px;text-align:center">
-        <p style="color:#64748b;margin:0;font-size:12px">DashGuard — Community Safety & Infrastructure Platform | reports@dashguard.app</p>
+        <p style="color:#64748b;margin:0;font-size:12px">Civik — Community Safety & Infrastructure Platform | reports@civik.app</p>
       </div>
     </div>
   `;
 
   if (transporter) {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || '"DashGuard Reports" <reports@dashguard.app>',
+      from: process.env.EMAIL_FROM || '"Civik Reports" <reports@civik.app>',
       to: dept.contact.email,
       subject,
       html

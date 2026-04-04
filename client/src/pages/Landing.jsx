@@ -35,7 +35,7 @@ const Landing = () => {
 
       <section className="features">
         <div className="container">
-          <h2>How DashGuard Works</h2>
+          <h2>How Civik Works</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">&#128247;</div>
@@ -76,7 +76,7 @@ const Landing = () => {
       <section className="cta">
         <div className="container">
           <h2>Ready to Make Roads Safer?</h2>
-          <p>Join thousands of drivers using DashGuard to protect their community.</p>
+          <p>Join thousands of drivers using Civik to protect their community.</p>
           {!isAuthenticated && (
             <Link to="/register" className="btn btn-primary btn-large">
               Create Free Account

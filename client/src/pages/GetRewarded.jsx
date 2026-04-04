@@ -48,7 +48,7 @@ const GetRewarded = () => {
           <div className="hero-content">
             <h1>Turn Your Dash Cam Into Income</h1>
             <p className="hero-subtitle">
-              Gig drivers earn <strong>$50-200+/month</strong> just by driving with DashGuard.
+              Gig drivers earn <strong>$50-200+/month</strong> just by driving with Civik.
               Report incidents, share data, and get paid.
             </p>
             <div className="hero-stats">

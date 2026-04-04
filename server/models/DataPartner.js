@@ -74,7 +74,7 @@ const dataPartnerSchema = new mongoose.Schema({
     }
   },
 
-  // API Access (if they have DashGuard API access)
+  // API Access (if they have Civik API access)
   apiKeyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ApiKey',

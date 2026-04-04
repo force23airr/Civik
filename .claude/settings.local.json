@@ -15,7 +15,12 @@
       "Bash(brew services start:*)",
       "Bash(kill:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Police Portal Dashboard for law enforcement review\n\nBuild dedicated web portal for officers to review crowdsourced violation reports with inline video playback, case management, and citation issuance. Officers authenticate with department credentials, view cases in their jurisdiction, stream evidence videos without downloading, and update case status with complete audit trail tracking. Includes department stats, officer leaderboard, and admin tools for portal enablement.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Police Portal Dashboard for law enforcement review\n\nBuild dedicated web portal for officers to review crowdsourced violation reports with inline video playback, case management, and citation issuance. Officers authenticate with department credentials, view cases in their jurisdiction, stream evidence videos without downloading, and update case status with complete audit trail tracking. Includes department stats, officer leaderboard, and admin tools for portal enablement.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(node -e ':*)",
+      "Bash(npx expo-image-placeholder:*)",
+      "Bash(npx expo-doctor@latest)",
+      "Bash(npx expo:*)"
     ]
   }
 }

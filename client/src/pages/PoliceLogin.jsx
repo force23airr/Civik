@@ -50,7 +50,7 @@ export default function PoliceLogin() {
         </div>
 
         <h1>Law Enforcement Portal</h1>
-        <p className="subtitle">DashGuard Traffic Violation Review System</p>
+        <p className="subtitle">Civik Traffic Violation Review System</p>
 
         {error && (
           <div className="error-banner">{error}</div>

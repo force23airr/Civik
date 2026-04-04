@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "DashGuard",
-    "slug": "dashguard",
+    "name": "Civik",
+    "slug": "civik",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "scheme": "dashguard",
+    "scheme": "civik",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -14,13 +14,13 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.dashguard.app",
+      "bundleIdentifier": "com.civik.app",
       "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "DashGuard needs your camera to capture parking violations and road incidents.",
-        "NSPhotoLibraryUsageDescription": "DashGuard needs access to your photo library to attach evidence to reports.",
-        "NSLocationWhenInUseUsageDescription": "DashGuard uses your location to auto-detect the nearest police department and attach GPS coordinates to your report.",
-        "NSMicrophoneUsageDescription": "DashGuard needs microphone access when recording video evidence.",
+        "NSCameraUsageDescription": "Civik needs your camera to capture parking violations and road incidents.",
+        "NSPhotoLibraryUsageDescription": "Civik needs access to your photo library to attach evidence to reports.",
+        "NSLocationWhenInUseUsageDescription": "Civik uses your location to auto-detect the nearest police department and attach GPS coordinates to your report.",
+        "NSMicrophoneUsageDescription": "Civik needs microphone access when recording video evidence.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
-      "package": "com.dashguard.app",
+      "package": "com.civik.app",
       "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
@@ -49,21 +49,21 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "DashGuard needs your camera to capture parking violations and incidents.",
-          "microphonePermission": "DashGuard needs microphone access for video recording.",
+          "cameraPermission": "Civik needs your camera to capture parking violations and incidents.",
+          "microphonePermission": "Civik needs microphone access for video recording.",
           "recordAudioAndroid": true
         }
       ],
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "DashGuard uses your location to find the nearest police department."
+          "locationAlwaysAndWhenInUsePermission": "Civik uses your location to find the nearest police department."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "DashGuard needs access to your photos to attach evidence to reports."
+          "photosPermission": "Civik needs access to your photos to attach evidence to reports."
         }
       ],
       "expo-router",

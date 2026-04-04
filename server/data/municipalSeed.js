@@ -1,10 +1,10 @@
 /**
- * DashGuard Global Municipal Department Seed Data
+ * Civik Global Municipal Department Seed Data
  *
  * protocol values:
- *   open311  — city has a live Open311 API; DashGuard submits directly
+ *   open311  — city has a live Open311 API; Civik submits directly
  *   email    — auto-emails the department on incident creation
- *   internal — stored in DashGuard queue; city must claim their portal
+ *   internal — stored in Civik queue; city must claim their portal
  *
  * Departments are seeded per INCIDENT TYPE, not per city, so a city like
  * Miami-Dade will have multiple entries (public_works, parks_recreation, stormwater…)

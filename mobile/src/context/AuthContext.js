@@ -16,14 +16,14 @@ export function AuthProvider({ children }) {
 
   const restoreSession = async () => {
     try {
-      const storedToken = await SecureStore.getItemAsync('dashguard_token');
+      const storedToken = await SecureStore.getItemAsync('civik_token');
       if (storedToken) {
         setToken(storedToken);
         const res = await client.get('/auth/me');
         setUser(res.data);
       }
     } catch {
-      await SecureStore.deleteItemAsync('dashguard_token');
+      await SecureStore.deleteItemAsync('civik_token');
     } finally {
       setLoading(false);
     }
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const res = await client.post('/auth/login', { email, password });
     const { token: newToken, user: newUser } = res.data;
-    await SecureStore.setItemAsync('dashguard_token', newToken);
+    await SecureStore.setItemAsync('civik_token', newToken);
     setToken(newToken);
     setUser(newUser);
     return newUser;
@@ -41,14 +41,14 @@ export function AuthProvider({ children }) {
   const register = async (username, email, password) => {
     const res = await client.post('/auth/register', { username, email, password });
     const { token: newToken, user: newUser } = res.data;
-    await SecureStore.setItemAsync('dashguard_token', newToken);
+    await SecureStore.setItemAsync('civik_token', newToken);
     setToken(newToken);
     setUser(newUser);
     return newUser;
   };
 
   const logout = async () => {
-    await SecureStore.deleteItemAsync('dashguard_token');
+    await SecureStore.deleteItemAsync('civik_token');
     setToken(null);
     setUser(null);
   };

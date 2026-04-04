@@ -41,7 +41,7 @@ const municipalDepartmentSchema = new mongoose.Schema({
     website: String,
     contactPerson: String
   },
-  // How DashGuard submits to this department
+  // How Civik submits to this department
   protocol: {
     type: String,
     enum: ['open311', 'email', 'internal'],
@@ -73,7 +73,7 @@ const municipalDepartmentSchema = new mongoose.Schema({
     radiusKm: { type: Number, default: 50 }
   },
   isActive: { type: Boolean, default: true },
-  // true = officially registered/verified with DashGuard
+  // true = officially registered/verified with Civik
   // false = community-sourced data, not yet confirmed
   isVerified: { type: Boolean, default: false },
   stats: {

@@ -136,13 +136,13 @@ async function sendViolationReportEmail(policeStation, report, attachments) {
 <body>
   <div class="header">
     <h1>Traffic Violation Report</h1>
-    <p>DashGuard Community Traffic Enforcement</p>
+    <p>Civik Community Traffic Enforcement</p>
   </div>
 
   <div class="content">
     <p>Dear ${policeStation.contactPerson?.name || policeStation.name},</p>
 
-    <p>A traffic violation has been reported and documented through the DashGuard platform. This report includes video/photo evidence with verified integrity hashes suitable for court proceedings.</p>
+    <p>A traffic violation has been reported and documented through the Civik platform. This report includes video/photo evidence with verified integrity hashes suitable for court proceedings.</p>
 
     <div class="summary-box">
       <h3>Violation Summary</h3>
@@ -193,12 +193,12 @@ async function sendViolationReportEmail(policeStation, report, attachments) {
 
     <p>For questions or to request additional information, please contact us.</p>
 
-    <p>Best regards,<br>DashGuard Traffic Enforcement Team</p>
+    <p>Best regards,<br>Civik Traffic Enforcement Team</p>
   </div>
 
   <div class="footer">
     <p><strong>Chain of Custody Notice:</strong> All evidence files have been preserved with SHA-256 integrity hashes. The chain of custody is documented in the attached manifest PDF. This evidence package is designed to be court-admissible.</p>
-    <p>&copy; ${new Date().getFullYear()} DashGuard - Community Traffic Enforcement Platform</p>
+    <p>&copy; ${new Date().getFullYear()} Civik - Community Traffic Enforcement Platform</p>
   </div>
 </body>
 </html>
@@ -213,7 +213,7 @@ Date Generated: ${new Date().toLocaleString()}
 
 Dear ${policeStation.contactPerson?.name || policeStation.name},
 
-A traffic violation has been reported through the DashGuard platform.
+A traffic violation has been reported through the Civik platform.
 
 VIOLATION SUMMARY
 -----------------
@@ -240,11 +240,11 @@ Attached files: Evidence manifest PDF and evidence package ZIP
 
 ---
 Chain of Custody Notice: All evidence files have been preserved with SHA-256 integrity hashes.
-© ${new Date().getFullYear()} DashGuard - Community Traffic Enforcement Platform
+© ${new Date().getFullYear()} Civik - Community Traffic Enforcement Platform
   `;
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'DashGuard <noreply@dashguard.com>',
+    from: process.env.EMAIL_FROM || 'Civik <noreply@civik.com>',
     to: policeStation.email,
     cc: policeStation.trafficDivisionEmail || undefined,
     subject: subject,

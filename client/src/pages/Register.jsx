@@ -50,7 +50,7 @@ const Register = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h1>Create Account</h1>
-        <p className="auth-subtitle">Join the DashGuard community</p>
+        <p className="auth-subtitle">Join the Civik community</p>
 
         {error && <div className="auth-error">{error}</div>}
 
