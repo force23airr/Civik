@@ -13,15 +13,16 @@ import {
   getUserExportJobs
 } from '../controllers/analyticsController.js';
 import auth from '../middleware/auth.js';
+import { optionalAuth } from '../middleware/auth.js';
 import { exportLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
-// All analytics routes require authentication
-router.use(auth);
+// Public — heatmap is accessible without auth for the map page
+router.get('/heatmap', optionalAuth, getHeatmap);
 
-// Analytics data endpoints
-router.get('/heatmap', getHeatmap);
+// All other analytics routes require authentication
+router.use(auth);
 router.get('/trends', getTrends);
 router.get('/peak-hours', getPeakHours);
 router.get('/by-type', getByType);

@@ -67,6 +67,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="heat-map"
+        options={{
+          title: 'Heat Map',
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" size={size} color={color} />,
+          tabBarActiveTintColor: '#f97316'
+        }}
+      />
+      <Tabs.Screen
         name="my-reports"
         options={{
           title: 'My Reports',

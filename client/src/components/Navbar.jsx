@@ -21,6 +21,7 @@ const Navbar = () => {
 
         <div className="navbar-links">
           <Link to="/incidents">Incidents</Link>
+          <Link to="/map">Heat Map</Link>
 
           {isAuthenticated ? (
             <>

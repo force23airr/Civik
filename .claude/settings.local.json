@@ -33,7 +33,9 @@
       "Bash(node --check server/middleware/auth.js)",
       "Bash(node --check server/middleware/admin.js)",
       "Bash(node --check server/routes/auth.js)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(xargs ls:*)",
+      "Bash(node:*)"
     ]
   }
 }

@@ -105,7 +105,8 @@ export const getIncidents = async (req, res) => {
 export const getIncidentById = async (req, res) => {
   try {
     const incident = await Incident.findById(req.params.id)
-      .populate('user', 'username avatar');
+      .populate('user', 'username avatar')
+      .populate('municipalReports.department', 'name type');
 
     if (!incident) {
       return res.status(404).json({ message: 'Incident not found' });
