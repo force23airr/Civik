@@ -1,13 +1,11 @@
 import Reward from '../models/Reward.js';
-import RewardTier from '../models/RewardTier.js';
 import Referral from '../models/Referral.js';
 import DataConsent from '../models/DataConsent.js';
 import User from '../models/User.js';
 import {
   REWARD_VALUES,
   getLeaderboard,
-  processPayout,
-  checkTierUpgrade
+  processPayout
 } from '../services/rewards/rewardService.js';
 import crypto from 'crypto';
 
@@ -30,11 +28,6 @@ export const getDashboard = async (req, res) => {
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ])
     ]);
-
-    // Get tier info
-    const tierInfo = await RewardTier.findOne({
-      name: consent?.tier?.current || 'bronze'
-    });
 
     // Calculate available balance
     const available = (consent?.compensation?.creditsEarned || 0) -
@@ -59,15 +52,6 @@ export const getDashboard = async (req, res) => {
         lifetime: consent?.compensation?.lifetimeEarnings || 0,
         redeemed: consent?.compensation?.creditsRedeemed || 0,
         availableUSD: (available / 100).toFixed(2)
-      },
-      tier: {
-        current: consent?.tier?.current || 'bronze',
-        multiplier: consent?.tier?.multiplier || 1.0,
-        info: tierInfo,
-        monthlyProgress: {
-          credits: consent?.tier?.monthlyCredits || 0,
-          incidents: consent?.tier?.monthlyIncidents || 0
-        }
       },
       referrals: {
         code: req.user.rewards?.referralCode,
@@ -128,36 +112,6 @@ export const getHistory = async (req, res) => {
         current: parseInt(page),
         pages: Math.ceil(total / limit),
         total
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'An error occurred' });
-  }
-};
-
-// @desc    Get tier information and progress
-// @route   GET /api/rewards/tiers
-// @access  Private
-export const getTiers = async (req, res) => {
-  try {
-    const tiers = await RewardTier.find({ isActive: true }).sort({ order: 1 });
-    const consent = await DataConsent.findOne({ user: req.user._id });
-
-    res.json({
-      currentTier: consent?.tier?.current || 'bronze',
-      tiers: tiers.map(tier => ({
-        name: tier.name,
-        displayName: tier.displayName,
-        description: tier.description,
-        icon: tier.icon,
-        color: tier.color,
-        requirements: tier.requirements,
-        benefits: tier.benefits,
-        isCurrent: tier.name === (consent?.tier?.current || 'bronze')
-      })),
-      progress: {
-        monthlyCredits: consent?.tier?.monthlyCredits || 0,
-        monthlyIncidents: consent?.tier?.monthlyIncidents || 0
       }
     });
   } catch (error) {
@@ -406,7 +360,6 @@ export const getLeaderboardData = async (req, res) => {
         rank: entry.rank,
         username: entry.username,
         avatar: entry.avatar,
-        tier: entry.tier || 'bronze',
         totalCredits: entry.totalCredits,
         totalCreditsUSD: (entry.totalCredits / 100).toFixed(2),
         incidentCount: entry.incidentCount,
@@ -500,7 +453,6 @@ export const updateProfile = async (req, res) => {
 export default {
   getDashboard,
   getHistory,
-  getTiers,
   getRewardRates,
   requestPayout,
   updatePaymentMethod,

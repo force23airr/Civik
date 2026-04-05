@@ -5,6 +5,13 @@ import ViolationReport from '../../models/ViolationReport.js';
 import { generatePackage, generateEvidenceManifest } from '../evidence/evidencePackager.js';
 import { getApplicableStatutes } from '../../config/trafficCodes.js';
 
+const escapeHtml = (str) => String(str || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // Create transporter (configured via environment variables)
 const createTransporter = () => {
   if (process.env.SMTP_HOST) {
@@ -70,14 +77,16 @@ export async function reportViolation(violationReport, options = {}) {
 
     if (options.database === 'direct_insurer' && options.insurerEmail) {
       // Send to specific insurer's claims/fraud department
-      await sendToInsurer(violationReport, {
+      const emailResult = await sendToInsurer(violationReport, {
         email: options.insurerEmail,
         name: options.insurerName,
         manifestPath
       });
 
-      submission.status = 'received';
-      submission.referenceNumber = `REF-${Date.now().toString(36).toUpperCase()}`;
+      if (emailResult.success) {
+        submission.status = 'received';
+        submission.referenceNumber = `REF-${Date.now().toString(36).toUpperCase()}`;
+      }
     } else {
       // For CLUE/ISO - these would be API integrations
       // Placeholder for future integration
@@ -136,15 +145,15 @@ async function sendToInsurer(report, insurerInfo) {
   </div>
 
   <div class="content">
-    <p>Dear ${insurerInfo.name} Claims Department,</p>
+    <p>Dear ${escapeHtml(insurerInfo.name)} Claims Department,</p>
 
     <p>This report documents a traffic violation by an insured driver, submitted by a witness through the Civik platform.</p>
 
     <div class="alert-box">
       <h3>Vehicle of Interest</h3>
-      <p class="license-plate">${report.offendingVehicle?.licensePlate}</p>
-      <p><strong>State:</strong> ${report.offendingVehicle?.plateState}</p>
-      ${report.offendingVehicle?.make ? `<p><strong>Vehicle:</strong> ${[report.offendingVehicle.color, report.offendingVehicle.make, report.offendingVehicle.model].filter(Boolean).join(' ')}</p>` : ''}
+      <p class="license-plate">${escapeHtml(report.offendingVehicle?.licensePlate)}</p>
+      <p><strong>State:</strong> ${escapeHtml(report.offendingVehicle?.plateState)}</p>
+      ${report.offendingVehicle?.make ? `<p><strong>Vehicle:</strong> ${escapeHtml([report.offendingVehicle.color, report.offendingVehicle.make, report.offendingVehicle.model].filter(Boolean).join(' '))}</p>` : ''}
     </div>
 
     <div class="summary-box">
@@ -153,17 +162,17 @@ async function sendToInsurer(report, insurerInfo) {
       <p><strong>Violation Type:</strong> ${violationTypeDisplay}</p>
       <p><strong>Severity:</strong> ${report.severity?.toUpperCase()}</p>
       <p><strong>Date/Time:</strong> ${new Date(report.incidentDateTime).toLocaleString()}</p>
-      <p><strong>Location:</strong> ${report.location?.address || 'Not specified'}</p>
-      ${report.location?.roadType ? `<p><strong>Road Type:</strong> ${report.location.roadType}</p>` : ''}
+      <p><strong>Location:</strong> ${escapeHtml(report.location?.address || 'Not specified')}</p>
+      ${report.location?.roadType ? `<p><strong>Road Type:</strong> ${escapeHtml(report.location.roadType)}</p>` : ''}
     </div>
 
     <h3>Incident Description</h3>
-    <p>${report.description}</p>
+    <p>${escapeHtml(report.description)}</p>
 
     ${report.applicableStatutes?.length > 0 ? `
     <h3>Applicable Traffic Violations</h3>
     <ul>
-      ${report.applicableStatutes.map(s => `<li><strong>${s.state} ${s.code}</strong>: ${s.description} (${s.points} points)</li>`).join('')}
+      ${report.applicableStatutes.map(s => `<li><strong>${escapeHtml(s.state)} ${escapeHtml(s.code)}</strong>: ${escapeHtml(s.description)} (${s.points} points)</li>`).join('')}
     </ul>
     ` : ''}
 
@@ -242,12 +251,19 @@ Evidence files: ${report.evidence?.length || 0} file(s) with verified integrity 
   }
 
   if (!transport) {
-    console.log('=== INSURANCE REPORT EMAIL ===');
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SMTP not configured — cannot send insurance emails in production');
+    }
+    console.log('=== INSURANCE REPORT EMAIL (dev mode) ===');
     console.log('To:', mailOptions.to);
     console.log('Subject:', mailOptions.subject);
     console.log('Attachments:', mailOptions.attachments.length);
     console.log('==============================');
-    return { success: true, messageId: `mock-${Date.now()}` };
+    return {
+      success: false,
+      mock: true,
+      messageId: `mock-${Date.now()}`
+    };
   }
 
   const info = await transport.sendMail(mailOptions);

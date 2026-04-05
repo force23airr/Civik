@@ -53,11 +53,6 @@ const userSchema = new mongoose.Schema({
       default: 0
     },
     // Quick access to key metrics
-    currentTier: {
-      type: String,
-      enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond'],
-      default: 'bronze'
-    },
     creditsBalance: {
       type: Number,
       default: 0

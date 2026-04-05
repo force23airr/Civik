@@ -20,12 +20,12 @@ function sanitizeIncident(incident, user) {
 
   if (!isOwner && !isPrivileged) {
     delete obj.detectedPlates;
-    delete obj.policeReport;
+    delete obj.policeReports;
     delete obj.municipalReports;
     // Round GPS to 2 decimal places (neighborhood-level, not exact address)
     if (obj.location) {
-      if (obj.location.lat) obj.location.lat = Math.round(obj.location.lat * 100) / 100;
-      if (obj.location.lng) obj.location.lng = Math.round(obj.location.lng * 100) / 100;
+      if (typeof obj.location.lat === 'number') obj.location.lat = Math.round(obj.location.lat * 100) / 100;
+      if (typeof obj.location.lng === 'number') obj.location.lng = Math.round(obj.location.lng * 100) / 100;
       delete obj.location.address;
       delete obj.location.zipCode;
     }

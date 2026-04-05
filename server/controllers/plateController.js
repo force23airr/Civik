@@ -294,6 +294,10 @@ export const searchByPlate = async (req, res) => {
   try {
     const { plate } = req.query;
 
+    if (!['admin', 'police_officer'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Police or admin access required' });
+    }
+
     if (!plate || plate.length < 3) {
       return res.status(400).json({ error: 'Plate must be at least 3 characters' });
     }
@@ -302,13 +306,9 @@ export const searchByPlate = async (req, res) => {
     // Escape regex special characters to prevent ReDoS
     const escapedSearch = normalizedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    // Build query — regular users only see their own incidents
     const query = {
       'detectedPlates.plate': { $regex: escapedSearch, $options: 'i' }
     };
-    if (!['admin', 'police_officer'].includes(req.user.role)) {
-      query.user = req.user._id;
-    }
 
     const incidents = await Incident.find(query)
       .populate('user', 'username')

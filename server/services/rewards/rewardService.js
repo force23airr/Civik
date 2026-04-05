@@ -1,5 +1,4 @@
 import Reward from '../../models/Reward.js';
-import RewardTier from '../../models/RewardTier.js';
 import DataConsent from '../../models/DataConsent.js';
 import User from '../../models/User.js';
 import Incident from '../../models/Incident.js';
@@ -116,8 +115,6 @@ export async function awardIncidentCredits(incident, userId) {
       consent = await DataConsent.create({ user: userId });
     }
 
-    const tierMultiplier = consent.tier?.multiplier || 1.0;
-
     // Calculate quality bonuses
     let qualityBonus = 0;
     const qualityFactors = [];
@@ -136,8 +133,7 @@ export async function awardIncidentCredits(incident, userId) {
     const streakBonus = await calculateStreakBonus(userId, consent);
 
     // Calculate final amount
-    const multipliedBase = Math.round((baseAmount + qualityBonus) * tierMultiplier);
-    const finalAmount = multipliedBase + streakBonus;
+    const finalAmount = baseAmount + qualityBonus + streakBonus;
 
     // Create reward record
     const reward = await Reward.create({
@@ -149,10 +145,7 @@ export async function awardIncidentCredits(incident, userId) {
       finalAmount,
       status: 'confirmed',
       source: { entityType: 'incident', entityId: incident._id },
-      multipliers: [
-        { type: 'tier', value: tierMultiplier, description: `${consent.tier?.current || 'bronze'} tier` },
-        ...qualityFactors
-      ],
+      multipliers: qualityFactors,
       description: `Reward for reporting ${incident.type.replace(/_/g, ' ')} incident`
     });
 
@@ -183,14 +176,6 @@ export async function awardIncidentCredits(incident, userId) {
     // Update user balances
     await updateUserBalance(userId, finalAmount);
 
-    // Update monthly tracking
-    consent.tier.monthlyCredits = (consent.tier.monthlyCredits || 0) + finalAmount;
-    consent.tier.monthlyIncidents = (consent.tier.monthlyIncidents || 0) + 1;
-    await consent.save();
-
-    // Check tier upgrade
-    await checkTierUpgrade(userId);
-
     return reward;
   } catch (error) {
     console.error('[RewardService] Error awarding incident credits:', error);
@@ -208,23 +193,20 @@ export async function awardPoliceReportBonus(incidentId, userId) {
     if (existing) return existing;
 
     const amount = REWARD_VALUES.action_bonus.police_report;
-    const consent = await DataConsent.findOne({ user: userId });
-    const multiplier = consent?.tier?.multiplier || 1.0;
-    const finalAmount = Math.round(amount * multiplier);
 
     const reward = await Reward.create({
       user: userId,
       type: 'police_report',
       baseAmount: amount,
-      amount: finalAmount,
-      finalAmount,
+      amount,
+      finalAmount: amount,
       status: 'confirmed',
       source: { entityType: 'police_report', entityId: incidentId },
-      multipliers: [{ type: 'tier', value: multiplier }],
+      multipliers: [],
       description: 'Bonus for submitting police report'
     });
 
-    await updateUserBalance(userId, finalAmount);
+    await updateUserBalance(userId, amount);
     return reward;
   } catch (error) {
     console.error('[RewardService] Error awarding police report bonus:', error);
@@ -242,23 +224,20 @@ export async function awardInsuranceClaimBonus(claimId, userId) {
     if (existing) return existing;
 
     const amount = REWARD_VALUES.action_bonus.insurance_claim;
-    const consent = await DataConsent.findOne({ user: userId });
-    const multiplier = consent?.tier?.multiplier || 1.0;
-    const finalAmount = Math.round(amount * multiplier);
 
     const reward = await Reward.create({
       user: userId,
       type: 'insurance_claim',
       baseAmount: amount,
-      amount: finalAmount,
-      finalAmount,
+      amount,
+      finalAmount: amount,
       status: 'confirmed',
       source: { entityType: 'insurance_claim', entityId: claimId },
-      multipliers: [{ type: 'tier', value: multiplier }],
+      multipliers: [],
       description: 'Bonus for filing insurance claim'
     });
 
-    await updateUserBalance(userId, finalAmount);
+    await updateUserBalance(userId, amount);
     return reward;
   } catch (error) {
     console.error('[RewardService] Error awarding insurance claim bonus:', error);
@@ -363,50 +342,6 @@ export async function updateUserBalance(userId, amount) {
 }
 
 /**
- * Check and update user tier
- */
-export async function checkTierUpgrade(userId) {
-  const consent = await DataConsent.findOne({ user: userId });
-  if (!consent) return;
-
-  const monthlyCredits = consent.tier?.monthlyCredits || 0;
-  const monthlyIncidents = consent.tier?.monthlyIncidents || 0;
-
-  const newTier = await RewardTier.calculateTier(monthlyCredits, monthlyIncidents);
-
-  if (newTier && newTier.name !== consent.tier?.current) {
-    const oldTier = consent.tier?.current || 'bronze';
-
-    consent.tier.current = newTier.name;
-    consent.tier.multiplier = newTier.benefits.creditMultiplier;
-
-    // Add to tier history
-    if (!consent.tier.tierHistory) consent.tier.tierHistory = [];
-
-    // Mark old tier as lost
-    const lastHistory = consent.tier.tierHistory[consent.tier.tierHistory.length - 1];
-    if (lastHistory && !lastHistory.lostAt) {
-      lastHistory.lostAt = new Date();
-    }
-
-    // Add new tier
-    consent.tier.tierHistory.push({
-      tier: newTier.name,
-      achievedAt: new Date()
-    });
-
-    await consent.save();
-
-    // Update user model
-    await User.findByIdAndUpdate(userId, {
-      'rewards.currentTier': newTier.name
-    });
-
-    console.log(`[RewardService] User ${userId} tier changed: ${oldTier} -> ${newTier.name}`);
-  }
-}
-
-/**
  * Award bounty for an approved parking violation report
  */
 export async function awardParkingViolationBounty(parkingViolationId, userId, violationType) {
@@ -419,33 +354,22 @@ export async function awardParkingViolationBounty(parkingViolationId, userId, vi
     if (existing) return existing;
 
     const baseAmount = REWARD_VALUES.parking_violation_bounty[violationType] || 200;
-    const consent = await DataConsent.findOne({ user: userId });
-    const multiplier = consent?.tier?.multiplier || 1.0;
-    const finalAmount = Math.round(baseAmount * multiplier);
 
     const reward = await Reward.create({
       user: userId,
       type: 'parking_violation_approved',
       baseAmount,
-      amount: finalAmount,
-      finalAmount,
+      amount: baseAmount,
+      finalAmount: baseAmount,
       status: 'confirmed',
       source: { entityType: 'parking_violation', entityId: parkingViolationId },
-      multipliers: [{ type: 'tier', value: multiplier, description: `${consent?.tier?.current || 'bronze'} tier` }],
+      multipliers: [],
       description: `Bounty for approved parking violation report (${violationType.replace(/_/g, ' ')})`
     });
 
-    await updateUserBalance(userId, finalAmount);
+    await updateUserBalance(userId, baseAmount);
 
-    // Update tier tracking
-    if (consent) {
-      consent.tier.monthlyCredits = (consent.tier.monthlyCredits || 0) + finalAmount;
-      await consent.save();
-    }
-
-    await checkTierUpgrade(userId);
-
-    console.log(`[RewardService] Parking bounty awarded: ${finalAmount} credits to user ${userId}`);
+    console.log(`[RewardService] Parking bounty awarded: ${baseAmount} credits to user ${userId}`);
     return reward;
   } catch (error) {
     console.error('[RewardService] Error awarding parking violation bounty:', error);
@@ -496,7 +420,6 @@ export async function getLeaderboard(period = 'monthly', limit = 50) {
         userId: '$_id',
         username: '$user.username',
         avatar: '$user.avatar',
-        tier: '$user.rewards.currentTier',
         totalCredits: 1,
         incidentCount: 1,
         referralCount: 1,
@@ -550,12 +473,9 @@ export async function processPayout(userId, amount, paymentMethod) {
     throw new Error('Insufficient balance');
   }
 
-  // Get tier for minimum threshold
-  const tier = await RewardTier.findOne({ name: consent.tier?.current || 'bronze' });
-  const minPayout = tier?.benefits?.reducedPayoutThreshold || 5000;
-
-  if (amount < minPayout) {
-    throw new Error(`Minimum payout is ${minPayout} credits ($${minPayout / 100})`);
+  // Minimum payout: 100 credits ($1)
+  if (amount < 100) {
+    throw new Error('Minimum payout is 100 credits ($1)');
   }
 
   // Create payout record (negative amount)
@@ -606,7 +526,6 @@ export default {
   awardInsuranceClaimBonus,
   awardParkingViolationBounty,
   updateUserBalance,
-  checkTierUpgrade,
   getLeaderboard,
   processPayout
 };

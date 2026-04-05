@@ -3,7 +3,6 @@ import { auth, optionalAuth } from '../middleware/auth.js';
 import {
   getDashboard,
   getHistory,
-  getTiers,
   getRewardRates,
   requestPayout,
   updatePaymentMethod,
@@ -28,7 +27,6 @@ router.get('/leaderboard', optionalAuth, getLeaderboardData);
 // Dashboard and history
 router.get('/dashboard', auth, getDashboard);
 router.get('/history', auth, getHistory);
-router.get('/tiers', auth, getTiers);
 
 // Payout
 router.post('/payout', auth, requestPayout);

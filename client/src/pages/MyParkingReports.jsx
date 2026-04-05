@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import ProtectedImage from '../components/ProtectedImage';
 import './MyParkingReports.css';
 
 function MyParkingReports() {
@@ -109,13 +110,13 @@ function MyParkingReports() {
 
                 {report.photos?.length > 0 && (
                   <div className="report-thumbs">
-                    {report.photos.slice(0, 3).map((photo, i) => (
-                      <img
-                        key={i}
-                        src={`/uploads/${photo.filename}`}
-                        alt="Evidence"
-                        className="thumb"
-                      />
+	                    {report.photos.slice(0, 3).map((photo, i) => (
+	                      <ProtectedImage
+	                        key={i}
+	                        src={photo.path || `/uploads/${photo.filename}`}
+	                        alt="Evidence"
+	                        className="thumb"
+	                      />
                     ))}
                     {report.photos.length > 3 && (
                       <span className="more-photos">+{report.photos.length - 3}</span>

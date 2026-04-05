@@ -6,6 +6,8 @@ import EnhancedVoteButtons from '../components/EnhancedVoteButtons';
 import RecklessnessRating from '../components/RecklessnessRating';
 import CommentSection from '../components/CommentSection';
 import ChainOfCustodyTimeline from '../components/ChainOfCustodyTimeline';
+import ProtectedImage from '../components/ProtectedImage';
+import VideoPlayer from '../components/VideoPlayer';
 import './ViolationDetail.css';
 
 const VIOLATION_TYPE_LABELS = {
@@ -301,21 +303,20 @@ function ViolationDetail() {
               <h2>Evidence</h2>
               {violation.evidence?.length > 0 ? (
                 <div className="evidence-gallery">
-                  {violation.evidence.map((file, index) => (
-                    <div key={index} className="evidence-item">
-                      {file.mimetype?.startsWith('video/') ? (
-                        <video
-                          src={`/uploads/${file.filename}`}
-                          controls
-                          className="evidence-media"
-                        />
-                      ) : (
-                        <img
-                          src={`/uploads/${file.filename}`}
-                          alt={file.originalFilename}
-                          className="evidence-media"
-                        />
-                      )}
+	                  {violation.evidence.map((file, index) => (
+	                    <div key={index} className="evidence-item">
+	                      {file.mimetype?.startsWith('video/') ? (
+	                        <VideoPlayer
+	                          src={file.path || `/uploads/${file.filename}`}
+	                          className="evidence-media"
+	                        />
+	                      ) : (
+	                        <ProtectedImage
+	                          src={file.path || `/uploads/${file.filename}`}
+	                          alt={file.originalFilename}
+	                          className="evidence-media"
+	                        />
+	                      )}
                       <div className="evidence-info">
                         <span className="filename">{file.originalFilename}</span>
                         <span className="hash">SHA-256: {file.sha256Hash?.substring(0, 16)}...</span>

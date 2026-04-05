@@ -32,14 +32,6 @@ const GetRewarded = () => {
     }
   };
 
-  const tierColors = {
-    bronze: '#CD7F32',
-    silver: '#C0C0C0',
-    gold: '#FFD700',
-    platinum: '#E5E4E2',
-    diamond: '#B9F2FF'
-  };
-
   return (
     <div className="get-rewarded">
       {/* Hero Section */}
@@ -61,8 +53,8 @@ const GetRewarded = () => {
                 <span className="stat-label">= 100 Credits</span>
               </div>
               <div className="stat">
-                <span className="stat-value">2x</span>
-                <span className="stat-label">Diamond Multiplier</span>
+                <span className="stat-value">$7.50</span>
+                <span className="stat-label">Top Bounty</span>
               </div>
             </div>
             <div className="hero-cta">
@@ -98,7 +90,7 @@ const GetRewarded = () => {
             <div className="step">
               <div className="step-number">3</div>
               <h3>Earn Credits</h3>
-              <p>Get credits instantly for every report. Higher tiers = bigger multipliers.</p>
+              <p>Get credits instantly for every report. Quality bonuses for video and GPS.</p>
             </div>
             <div className="step">
               <div className="step-number">4</div>
@@ -134,7 +126,7 @@ const GetRewarded = () => {
                 <li>AI companies buy datasets</li>
                 <li>Your data, your earnings</li>
                 <li>Passive income potential</li>
-                <li>Tier bonuses up to +15%</li>
+                <li>Quality bonuses for clear footage</li>
               </ul>
             </div>
             <div className="earning-card">
@@ -152,32 +144,6 @@ const GetRewarded = () => {
         </div>
       </section>
 
-      {/* Tier System */}
-      <section className="tier-section">
-        <div className="container">
-          <h2>Tier System</h2>
-          <p className="section-subtitle">Level up to earn more</p>
-          <div className="tier-grid">
-            {[
-              { name: 'Bronze', mult: '1.0x', req: 'Starting tier', color: tierColors.bronze },
-              { name: 'Silver', mult: '1.1x', req: '500 credits/mo', color: tierColors.silver },
-              { name: 'Gold', mult: '1.25x', req: '2,000 credits/mo', color: tierColors.gold },
-              { name: 'Platinum', mult: '1.5x', req: '5,000 credits/mo', color: tierColors.platinum },
-              { name: 'Diamond', mult: '2.0x', req: '10,000 credits/mo', color: tierColors.diamond }
-            ].map((tier, idx) => (
-              <div key={tier.name} className="tier-card" style={{ borderColor: tier.color }}>
-                <div className="tier-icon" style={{ color: tier.color }}>
-                  {idx === 4 ? '&#128142;' : idx === 3 ? '&#128142;' : idx === 2 ? '&#129351;' : idx === 1 ? '&#129352;' : '&#129353;'}
-                </div>
-                <h3>{tier.name}</h3>
-                <div className="tier-mult">{tier.mult}</div>
-                <p>{tier.req}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Leaderboard Preview */}
       {leaderboard.length > 0 && (
         <section className="leaderboard-section">
@@ -188,9 +154,6 @@ const GetRewarded = () => {
                 <div key={idx} className="leaderboard-entry">
                   <span className="rank">#{entry.rank}</span>
                   <span className="username">{entry.username}</span>
-                  <span className="tier-badge" style={{ color: tierColors[entry.tier] }}>
-                    {entry.tier}
-                  </span>
                   <span className="credits">${entry.totalCreditsUSD}</span>
                 </div>
               ))}
@@ -220,7 +183,7 @@ const GetRewarded = () => {
               <span>Amazon Flex</span>
             </div>
             <div className="earnings-example">
-              <h4>Example Daily Earnings (Silver Tier)</h4>
+              <h4>Example Daily Earnings</h4>
               <table>
                 <tbody>
                   <tr>
@@ -240,8 +203,8 @@ const GetRewarded = () => {
                     <td>5 credits</td>
                   </tr>
                   <tr className="total">
-                    <td>Day Total (1.1x)</td>
-                    <td>~45 credits</td>
+                    <td>Day Total</td>
+                    <td>~41 credits</td>
                   </tr>
                 </tbody>
               </table>
@@ -258,7 +221,7 @@ const GetRewarded = () => {
           <div className="faq-grid">
             <div className="faq-item">
               <h4>How do I get paid?</h4>
-              <p>Cash out anytime you hit the minimum threshold (varies by tier). We support PayPal, bank transfer, and crypto.</p>
+              <p>Cash out anytime you have at least 100 credits ($1). We support PayPal, bank transfer, and crypto.</p>
             </div>
             <div className="faq-item">
               <h4>What data do you sell?</h4>
@@ -269,8 +232,8 @@ const GetRewarded = () => {
               <p>70% of all dataset sales go directly to contributors based on their contribution percentage.</p>
             </div>
             <div className="faq-item">
-              <h4>How do tiers work?</h4>
-              <p>Your tier is based on monthly activity. Higher tiers get multipliers on all earnings and lower payout thresholds.</p>
+              <h4>How do streaks work?</h4>
+              <p>Report daily to build your streak. Hit 7, 14, 30, 60, or 90 day milestones to earn bonus credits.</p>
             </div>
           </div>
         </div>

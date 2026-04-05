@@ -10,22 +10,6 @@ const Leaderboard = ({ limit = 20, showFilters = true, compact = false }) => {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('monthly');
 
-  const tierColors = {
-    bronze: '#CD7F32',
-    silver: '#C0C0C0',
-    gold: '#FFD700',
-    platinum: '#E5E4E2',
-    diamond: '#B9F2FF'
-  };
-
-  const tierIcons = {
-    bronze: '🥉',
-    silver: '🥈',
-    gold: '🥇',
-    platinum: '💎',
-    diamond: '💠'
-  };
-
   useEffect(() => {
     fetchLeaderboard();
   }, [period, limit]);
@@ -106,12 +90,6 @@ const Leaderboard = ({ limit = 20, showFilters = true, compact = false }) => {
               </div>
               <div className="entry-user">
                 <span className="username">{entry.username}</span>
-                <span
-                  className="tier-badge"
-                  style={{ backgroundColor: tierColors[entry.tier], color: entry.tier === 'silver' || entry.tier === 'platinum' ? '#1a202c' : '#fff' }}
-                >
-                  {tierIcons[entry.tier]} {entry.tier}
-                </span>
               </div>
               <div className="entry-stats">
                 <div className="stat-item">
@@ -142,12 +120,6 @@ const Leaderboard = ({ limit = 20, showFilters = true, compact = false }) => {
             </div>
             <div className="entry-user">
               <span className="username">You</span>
-              <span
-                className="tier-badge"
-                style={{ backgroundColor: tierColors[userRank.tier], color: userRank.tier === 'silver' || userRank.tier === 'platinum' ? '#1a202c' : '#fff' }}
-              >
-                {tierIcons[userRank.tier]} {userRank.tier}
-              </span>
             </div>
             <div className="entry-stats">
               <div className="stat-item">

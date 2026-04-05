@@ -5,7 +5,6 @@ import './RewardsDashboard.css';
 
 const RewardsDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
-  const [tiers, setTiers] = useState([]);
   const [referrals, setReferrals] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -15,7 +14,6 @@ const RewardsDashboard = () => {
 
   useEffect(() => {
     fetchDashboard();
-    fetchTiers();
     fetchReferrals();
   }, []);
 
@@ -27,15 +25,6 @@ const RewardsDashboard = () => {
       console.error('Error fetching dashboard:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchTiers = async () => {
-    try {
-      const res = await api.get('/rewards/tiers');
-      setTiers(res.data.tiers || []);
-    } catch (error) {
-      console.error('Error fetching tiers:', error);
     }
   };
 
@@ -71,14 +60,6 @@ const RewardsDashboard = () => {
       );
       alert('Referral link copied!');
     }
-  };
-
-  const tierColors = {
-    bronze: '#CD7F32',
-    silver: '#C0C0C0',
-    gold: '#FFD700',
-    platinum: '#E5E4E2',
-    diamond: '#B9F2FF'
   };
 
   if (loading) {
@@ -150,39 +131,12 @@ const RewardsDashboard = () => {
           >
             Referrals
           </button>
-          <button
-            className={`tab ${activeTab === 'tiers' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tiers')}
-          >
-            Tiers
-          </button>
         </div>
 
         {/* Tab Content */}
         <div className="tab-content">
           {activeTab === 'overview' && (
             <div className="overview-tab">
-              {/* Tier Progress */}
-              <div className="card tier-card">
-                <h3>Current Tier</h3>
-                <div className="current-tier" style={{ borderColor: tierColors[dashboard?.tier?.current] }}>
-                  <span className="tier-name" style={{ color: tierColors[dashboard?.tier?.current] }}>
-                    {dashboard?.tier?.current?.toUpperCase() || 'BRONZE'}
-                  </span>
-                  <span className="tier-mult">{dashboard?.tier?.multiplier || 1.0}x multiplier</span>
-                </div>
-                <div className="tier-progress">
-                  <div className="progress-stat">
-                    <span>Monthly Credits</span>
-                    <span>{dashboard?.tier?.monthlyProgress?.credits || 0}</span>
-                  </div>
-                  <div className="progress-stat">
-                    <span>Monthly Incidents</span>
-                    <span>{dashboard?.tier?.monthlyProgress?.incidents || 0}</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Streaks */}
               <div className="card streak-card">
                 <h3>Streaks</h3>
@@ -288,53 +242,6 @@ const RewardsDashboard = () => {
             </div>
           )}
 
-          {activeTab === 'tiers' && (
-            <div className="tiers-tab">
-              <div className="tiers-grid">
-                {tiers.map((tier) => (
-                  <div
-                    key={tier.name}
-                    className={`tier-detail-card ${tier.isCurrent ? 'current' : ''}`}
-                    style={{ borderColor: tier.isCurrent ? tierColors[tier.name] : 'transparent' }}
-                  >
-                    <div className="tier-header" style={{ color: tierColors[tier.name] }}>
-                      <span className="tier-icon">{tier.icon}</span>
-                      <h4>{tier.displayName}</h4>
-                    </div>
-                    <p className="tier-desc">{tier.description}</p>
-                    <div className="tier-benefits">
-                      <div className="benefit">
-                        <span>Multiplier:</span>
-                        <strong>{tier.benefits.creditMultiplier}x</strong>
-                      </div>
-                      {tier.benefits.monthlyBonus > 0 && (
-                        <div className="benefit">
-                          <span>Monthly Bonus:</span>
-                          <strong>{tier.benefits.monthlyBonus} credits</strong>
-                        </div>
-                      )}
-                      {tier.benefits.revenueShareBonus > 0 && (
-                        <div className="benefit">
-                          <span>Revenue Bonus:</span>
-                          <strong>+{tier.benefits.revenueShareBonus}%</strong>
-                        </div>
-                      )}
-                      <div className="benefit">
-                        <span>Payout Min:</span>
-                        <strong>${(tier.benefits.reducedPayoutThreshold / 100).toFixed(0)}</strong>
-                      </div>
-                    </div>
-                    <div className="tier-requirements">
-                      <small>
-                        Requires: {tier.requirements.minMonthlyCredits} credits &
-                        {tier.requirements.minMonthlyIncidents} incidents/month
-                      </small>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Payout Modal */}

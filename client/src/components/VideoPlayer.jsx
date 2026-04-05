@@ -1,38 +1,57 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../services/api';
 import './VideoPlayer.css';
 
-export default function VideoPlayer({ src }) {
+const ASSET_ORIGIN = API_URL.replace(/\/api\/?$/, '');
+
+const buildAssetUrl = (src) => {
+  if (!src) return null;
+  if (/^https?:\/\//i.test(src)) return src;
+  return `${ASSET_ORIGIN}${src.startsWith('/') ? src : `/${src}`}`;
+};
+
+export default function VideoPlayer({ src, className = 'video-player__video' }) {
   const [videoUrl, setVideoUrl] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!src) return;
+    if (!src) return undefined;
 
     let objectUrl = null;
+    let active = true;
 
     const loadVideo = async () => {
       try {
+        setError(null);
+        setVideoUrl(null);
+
         const token = localStorage.getItem('token');
-        const response = await fetch(src, {
+        const response = await fetch(buildAssetUrl(src), {
+          credentials: 'include',
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
 
         if (!response.ok) {
-          setError('Unable to load video');
-          return;
+          throw new Error('Video request failed');
         }
 
         const blob = await response.blob();
         objectUrl = URL.createObjectURL(blob);
-        setVideoUrl(objectUrl);
+
+        if (active) {
+          setVideoUrl(objectUrl);
+        }
       } catch (err) {
-        setError('Unable to load video');
+        if (active) {
+          setError('Unable to load video');
+        }
       }
     };
 
     loadVideo();
 
     return () => {
+      active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [src]);
@@ -48,7 +67,7 @@ export default function VideoPlayer({ src }) {
           controls
           width="100%"
           preload="metadata"
-          className="video-player__video"
+          className={className}
         >
           <source src={videoUrl} type="video/mp4" />
           Your browser does not support video playback.

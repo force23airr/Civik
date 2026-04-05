@@ -18,7 +18,6 @@ const rewardSchema = new mongoose.Schema({
       'referral_bonus',         // Bonus for referring users
       'referral_welcome',       // Welcome bonus for referred user
       'referral_milestone',     // Milestone bonuses (5, 10, 25 referrals)
-      'tier_bonus',             // Monthly tier maintenance bonus
       'quality_bonus',          // High-quality/verified data bonus
       'streak_bonus',           // Consecutive daily contribution bonus
       'police_report',          // Bonus for sending to police
@@ -57,7 +56,7 @@ const rewardSchema = new mongoose.Schema({
   multipliers: [{
     type: {
       type: String,
-      enum: ['tier', 'streak', 'bonus_event', 'quality', 'campaign']
+      enum: ['streak', 'bonus_event', 'quality', 'campaign']
     },
     value: Number,
     description: String

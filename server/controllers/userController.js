@@ -94,7 +94,7 @@ export const listUsers = async (req, res) => {
 
     const [users, total] = await Promise.all([
       User.find(filter)
-        .select('_id username email role avatar createdAt rewards.creditsBalance rewards.lifetimeCredits rewards.currentTier')
+        .select('_id username email role avatar createdAt rewards.creditsBalance rewards.lifetimeCredits')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum)

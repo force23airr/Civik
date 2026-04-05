@@ -152,34 +152,6 @@ const dataConsentSchema = new mongoose.Schema({
     }
   },
 
-  // Tier information
-  tier: {
-    current: {
-      type: String,
-      enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond'],
-      default: 'bronze'
-    },
-    multiplier: {
-      type: Number,
-      default: 1.0
-    },
-    monthlyCredits: {
-      type: Number,
-      default: 0
-    },
-    monthlyIncidents: {
-      type: Number,
-      default: 0
-    },
-    lastTierCheck: Date,
-    lastMonthReset: Date,
-    tierHistory: [{
-      tier: String,
-      achievedAt: Date,
-      lostAt: Date
-    }]
-  },
-
   // Streak tracking
   streaks: {
     currentDailyStreak: {

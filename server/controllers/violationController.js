@@ -20,6 +20,7 @@ function sanitizeViolation(violation, user) {
     }
     // Remove enforcement data
     delete obj.lawEnforcementSubmissions;
+    delete obj.insuranceSubmissions;
     delete obj.chainOfCustody;
     // Remove evidence GPS metadata
     if (obj.evidence) {
@@ -31,8 +32,8 @@ function sanitizeViolation(violation, user) {
     }
     // Round GPS
     if (obj.location) {
-      if (obj.location.lat) obj.location.lat = Math.round(obj.location.lat * 100) / 100;
-      if (obj.location.lng) obj.location.lng = Math.round(obj.location.lng * 100) / 100;
+      if (typeof obj.location.lat === 'number') obj.location.lat = Math.round(obj.location.lat * 100) / 100;
+      if (typeof obj.location.lng === 'number') obj.location.lng = Math.round(obj.location.lng * 100) / 100;
       delete obj.location.address;
     }
   }
