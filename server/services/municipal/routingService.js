@@ -6,6 +6,13 @@ import MunicipalDepartment from '../../models/MunicipalDepartment.js';
 import MunicipalReport from '../../models/MunicipalReport.js';
 import Incident from '../../models/Incident.js';
 
+const escapeHtml = (str) => String(str || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // ─── Incident type → Department type map ─────────────────────────────────────
 export const INCIDENT_TO_DEPT = {
   infrastructure_pothole:     'public_works',
@@ -190,8 +197,8 @@ async function submitViaEmail(dept, incident, report) {
           <tr><td style="padding:8px;font-weight:bold;color:#374151;width:140px">Report ID</td><td style="padding:8px;color:#111827">${incident._id}</td></tr>
           <tr style="background:#f1f5f9"><td style="padding:8px;font-weight:bold;color:#374151">Type</td><td style="padding:8px;color:#111827">${formatType(incident.type)}</td></tr>
           <tr><td style="padding:8px;font-weight:bold;color:#374151">Severity</td><td style="padding:8px;color:#111827">${incident.severity?.toUpperCase()}</td></tr>
-          <tr style="background:#f1f5f9"><td style="padding:8px;font-weight:bold;color:#374151">Location</td><td style="padding:8px;color:#111827">${incident.location.address || ''}<br/>${incident.location.city || ''}, ${incident.location.state || ''} ${incident.location.zipCode || ''}<br/><a href="https://maps.google.com/?q=${incident.location.lat},${incident.location.lng}">View on Map (${incident.location.lat?.toFixed(5)}, ${incident.location.lng?.toFixed(5)})</a></td></tr>
-          <tr><td style="padding:8px;font-weight:bold;color:#374151">Description</td><td style="padding:8px;color:#111827">${incident.description}</td></tr>
+          <tr style="background:#f1f5f9"><td style="padding:8px;font-weight:bold;color:#374151">Location</td><td style="padding:8px;color:#111827">${escapeHtml(incident.location.address || '')}<br/>${escapeHtml(incident.location.city || '')}, ${escapeHtml(incident.location.state || '')} ${escapeHtml(incident.location.zipCode || '')}<br/><a href="https://maps.google.com/?q=${incident.location.lat},${incident.location.lng}">View on Map (${incident.location.lat?.toFixed(5)}, ${incident.location.lng?.toFixed(5)})</a></td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#374151">Description</td><td style="padding:8px;color:#111827">${escapeHtml(incident.description)}</td></tr>
           <tr style="background:#f1f5f9"><td style="padding:8px;font-weight:bold;color:#374151">Reported</td><td style="padding:8px;color:#111827">${new Date(incident.createdAt).toLocaleString()}</td></tr>
           ${incident.mediaFiles?.length ? `<tr><td style="padding:8px;font-weight:bold;color:#374151">Evidence</td><td style="padding:8px;color:#111827">${incident.mediaFiles.length} file(s) attached</td></tr>` : ''}
         </table>
@@ -214,7 +221,9 @@ async function submitViaEmail(dept, incident, report) {
     });
     console.log(`[Municipal/Email] Sent to ${dept.contact.email}`);
   } else {
-    // Dev mode — log to console
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SMTP not configured — cannot send municipal emails in production');
+    }
     console.log(`[Municipal/Email] DEV MODE — would send to ${dept.contact.email}`);
     console.log(`  Subject: ${subject}`);
   }

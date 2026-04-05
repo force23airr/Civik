@@ -5,6 +5,13 @@ import path from 'path';
 import { generatePackage } from '../evidence/evidencePackager.js';
 import PoliceStation from '../../models/PoliceStation.js';
 
+const escapeHtml = (str) => String(str || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // Create transporter (configured via environment variables)
 const createTransporter = () => {
   if (process.env.SMTP_HOST) {
@@ -150,20 +157,20 @@ async function sendViolationReportEmail(policeStation, report, attachments) {
       <p><strong>Violation Type:</strong> ${violationTypeDisplay}</p>
       <p><strong>Severity:</strong> <span class="badge badge-${report.severity}">${report.severity?.toUpperCase()}</span></p>
       <p><strong>Date/Time:</strong> ${new Date(report.incidentDateTime).toLocaleString()}</p>
-      <p><strong>Location:</strong> ${report.location?.address || 'Not specified'}</p>
+      <p><strong>Location:</strong> ${escapeHtml(report.location?.address || 'Not specified')}</p>
       <p><strong>GPS Coordinates:</strong> ${report.location?.lat}, ${report.location?.lng}</p>
     </div>
 
     <div class="vehicle-info">
       <h3>Offending Vehicle</h3>
-      <p><strong>License Plate:</strong> <span style="font-size: 18px; font-weight: bold;">${report.offendingVehicle?.licensePlate}</span></p>
-      <p><strong>State:</strong> ${report.offendingVehicle?.plateState}</p>
-      ${report.offendingVehicle?.make ? `<p><strong>Vehicle:</strong> ${[report.offendingVehicle.color, report.offendingVehicle.make, report.offendingVehicle.model].filter(Boolean).join(' ')}</p>` : ''}
-      ${report.offendingVehicle?.vehicleType ? `<p><strong>Type:</strong> ${report.offendingVehicle.vehicleType}</p>` : ''}
+      <p><strong>License Plate:</strong> <span style="font-size: 18px; font-weight: bold;">${escapeHtml(report.offendingVehicle?.licensePlate)}</span></p>
+      <p><strong>State:</strong> ${escapeHtml(report.offendingVehicle?.plateState)}</p>
+      ${report.offendingVehicle?.make ? `<p><strong>Vehicle:</strong> ${escapeHtml([report.offendingVehicle.color, report.offendingVehicle.make, report.offendingVehicle.model].filter(Boolean).join(' '))}</p>` : ''}
+      ${report.offendingVehicle?.vehicleType ? `<p><strong>Type:</strong> ${escapeHtml(report.offendingVehicle.vehicleType)}</p>` : ''}
     </div>
 
     <h3>Description</h3>
-    <p>${report.description}</p>
+    <p>${escapeHtml(report.description)}</p>
 
     ${report.applicableStatutes?.length > 0 ? `
     <h3>Applicable Traffic Codes</h3>
@@ -273,15 +280,16 @@ Chain of Custody Notice: All evidence files have been preserved with SHA-256 int
 
   // If no transporter (dev mode), log and return mock result
   if (!transport) {
-    console.log('=== VIOLATION REPORT EMAIL ===');
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SMTP not configured — cannot send enforcement emails in production');
+    }
+    console.log('=== VIOLATION REPORT EMAIL (dev mode) ===');
     console.log('To:', mailOptions.to);
-    console.log('CC:', mailOptions.cc);
     console.log('Subject:', mailOptions.subject);
-    console.log('Attachments:', mailOptions.attachments.length);
     console.log('==============================');
-
     return {
-      success: true,
+      success: false,
+      mock: true,
       messageId: `mock-${Date.now()}`,
       preview: 'Email logged to console (no SMTP configured)'
     };

@@ -7,6 +7,38 @@ import { getApplicableStatutes, getStateTrafficCodes, violationTypes, severityLe
 import path from 'path';
 import fs from 'fs';
 
+function sanitizeViolation(violation, user) {
+  const obj = violation.toObject ? violation.toObject() : { ...violation };
+  const isOwner = user && obj.reporter?._id?.toString() === user._id.toString();
+  const isPrivileged = user && ['admin', 'police_officer', 'moderator'].includes(user.role);
+
+  if (!isOwner && !isPrivileged) {
+    // Remove plate data
+    if (obj.offendingVehicle) {
+      delete obj.offendingVehicle.licensePlate;
+      delete obj.offendingVehicle.plateState;
+    }
+    // Remove enforcement data
+    delete obj.lawEnforcementSubmissions;
+    delete obj.chainOfCustody;
+    // Remove evidence GPS metadata
+    if (obj.evidence) {
+      obj.evidence = obj.evidence.map(e => {
+        const cleaned = { ...e };
+        if (cleaned.metadata) delete cleaned.metadata.gpsData;
+        return cleaned;
+      });
+    }
+    // Round GPS
+    if (obj.location) {
+      if (obj.location.lat) obj.location.lat = Math.round(obj.location.lat * 100) / 100;
+      if (obj.location.lng) obj.location.lng = Math.round(obj.location.lng * 100) / 100;
+      delete obj.location.address;
+    }
+  }
+  return obj;
+}
+
 // @desc    Create a new violation report
 // @route   POST /api/violations
 // @access  Private
@@ -122,9 +154,11 @@ export const getViolationReports = async (req, res) => {
     if (severity) query.severity = severity;
     if (status) query.status = status;
     if (plateState) query['offendingVehicle.plateState'] = plateState;
-    if (licensePlate) {
-      const escapedPlate = licensePlate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      query['offendingVehicle.licensePlate'] = new RegExp(escapedPlate, 'i');
+    if (req.user && ['admin', 'police_officer'].includes(req.user.role)) {
+      if (licensePlate) {
+        const escapedPlate = licensePlate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query['offendingVehicle.licensePlate'] = new RegExp(escapedPlate, 'i');
+      }
     }
 
     if (startDate || endDate) {
@@ -164,8 +198,10 @@ export const getViolationReports = async (req, res) => {
       .limit(safeLimit)
       .skip((safePage - 1) * safeLimit);
 
+    const sanitized = violations.map(v => sanitizeViolation(v, req.user));
+
     res.json({
-      violations,
+      violations: sanitized,
       pagination: {
         current: parseInt(page),
         pages,
@@ -252,13 +288,7 @@ export const getViolationReportById = async (req, res) => {
       await violation.save();
     }
 
-    // Hide chain of custody from non-privileged users (contains IPs and user agents)
-    const violationObj = violation.toObject();
-    if (!req.user || !['admin', 'moderator'].includes(req.user.role)) {
-      delete violationObj.chainOfCustody;
-    }
-
-    res.json(violationObj);
+    res.json(sanitizeViolation(violation, req.user));
   } catch (error) {
     console.error('Error fetching violation report:', error);
     res.status(500).json({ message: 'An error occurred' });

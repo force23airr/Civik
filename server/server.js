@@ -109,7 +109,7 @@ app.use('/uploads', async (req, res, next) => {
     const headerToken = req.headers.authorization?.startsWith('Bearer ')
       ? req.headers.authorization.split(' ')[1]
       : null;
-    const token = cookieToken || headerToken;
+    const token = cookieToken || headerToken || req.query.token;
     if (!token) return res.status(401).json({ message: 'Authentication required' });
     const jwt = await import('jsonwebtoken');
     jwt.default.verify(token, process.env.JWT_SECRET);

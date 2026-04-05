@@ -2,6 +2,13 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import fs from 'fs';
 
+const escapeHtml = (str) => String(str || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // Create transporter (configured via environment variables)
 const createTransporter = () => {
   // Use environment variables or fallback to ethereal for testing
@@ -77,14 +84,14 @@ export async function sendPoliceReport(policeStation, incident, pdfPath, options
       <p><strong>Type:</strong> ${incidentType}</p>
       <p><strong>Severity:</strong> <span class="badge badge-${incident.severity}">${incident.severity?.toUpperCase()}</span></p>
       <p><strong>Date:</strong> ${incidentDate}</p>
-      <p><strong>Location:</strong> ${incident.location?.address || 'Not specified'}</p>
+      <p><strong>Location:</strong> ${escapeHtml(incident.location?.address || 'Not specified')}</p>
     </div>
 
     <h3>Incident Title</h3>
-    <p>${incident.title}</p>
+    <p>${escapeHtml(incident.title)}</p>
 
     <h3>Description</h3>
-    <p>${incident.description}</p>
+    <p>${escapeHtml(incident.description)}</p>
 
     ${incident.mediaFiles?.length > 0 ? `
     <h3>Attached Evidence</h3>
@@ -167,14 +174,16 @@ Disclaimer: This report was generated automatically by the Civik platform.
 
   // If no transporter (dev mode), log and return mock result
   if (!transport) {
-    console.log('=== EMAIL WOULD BE SENT ===');
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SMTP not configured — cannot send emails in production');
+    }
+    console.log('=== EMAIL WOULD BE SENT (dev mode) ===');
     console.log('To:', mailOptions.to);
     console.log('Subject:', mailOptions.subject);
-    console.log('Attachments:', mailOptions.attachments.length);
     console.log('===========================');
-
     return {
-      success: true,
+      success: false,
+      mock: true,
       messageId: `mock-${Date.now()}`,
       preview: 'Email logged to console (no SMTP configured)'
     };

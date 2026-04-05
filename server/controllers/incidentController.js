@@ -12,6 +12,27 @@ import { routeIncident } from '../services/municipal/routingService.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Strip sensitive fields for non-owner/non-admin users
+function sanitizeIncident(incident, user) {
+  const obj = incident.toObject ? incident.toObject() : { ...incident };
+  const isOwner = user && obj.user?._id?.toString() === user._id.toString();
+  const isPrivileged = user && ['admin', 'police_officer', 'moderator'].includes(user.role);
+
+  if (!isOwner && !isPrivileged) {
+    delete obj.detectedPlates;
+    delete obj.policeReport;
+    delete obj.municipalReports;
+    // Round GPS to 2 decimal places (neighborhood-level, not exact address)
+    if (obj.location) {
+      if (obj.location.lat) obj.location.lat = Math.round(obj.location.lat * 100) / 100;
+      if (obj.location.lng) obj.location.lng = Math.round(obj.location.lng * 100) / 100;
+      delete obj.location.address;
+      delete obj.location.zipCode;
+    }
+  }
+  return obj;
+}
+
 // Async plate detection helper (runs in background)
 const processPlateDetection = async (incident) => {
   try {
@@ -87,8 +108,10 @@ export const getIncidents = async (req, res) => {
 
     const total = await Incident.countDocuments(query);
 
+    const sanitized = incidents.map(inc => sanitizeIncident(inc, req.user));
+
     res.json({
-      incidents,
+      incidents: sanitized,
       pagination: {
         current: parseInt(page),
         pages: Math.ceil(total / parseInt(limit)),
@@ -112,7 +135,7 @@ export const getIncidentById = async (req, res) => {
       return res.status(404).json({ message: 'Incident not found' });
     }
 
-    res.json(incident);
+    res.json(sanitizeIncident(incident, req.user));
   } catch (error) {
     res.status(500).json({ message: 'An error occurred' });
   }
