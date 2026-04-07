@@ -58,6 +58,9 @@ export default function ReportInfrastructureScreen() {
   const [routingPreview, setRoutingPreview] = useState(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
 
+  // Track whether GPS was refreshed at photo-capture time
+  const locationRefreshedForPhotos = useRef(false);
+
   useEffect(() => {
     fetchJurisdictions();
     autoDetectLocation();
@@ -75,21 +78,21 @@ export default function ReportInfrastructureScreen() {
     }
   };
 
+  const refreshGpsLocation = async (accuracy = Location.Accuracy.Balanced) => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') return null;
+    const loc = await Location.getCurrentPositionAsync({ accuracy });
+    const coords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
+    setGpsLocation(coords);
+    const [addr] = await Location.reverseGeocodeAsync({ latitude: coords.lat, longitude: coords.lng });
+    if (addr) setGpsAddress(addr);
+    return coords;
+  };
+
   const autoDetectLocation = async () => {
     setLocating(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') { setLocating(false); return; }
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      setGpsLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-      const [addr] = await Location.reverseGeocodeAsync({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-      if (addr) {
-        setGpsAddress(addr);
-        // Auto-select county + city if they match FL counties
-        if (addr.region === 'FL' || addr.region === 'Florida') {
-          // We'll let user confirm via picker
-        }
-      }
+      await refreshGpsLocation(Location.Accuracy.Balanced);
     } catch (e) {
       if (__DEV__) console.warn('Location error', e.message);
     } finally {
@@ -136,6 +139,12 @@ export default function ReportInfrastructureScreen() {
       setPhotos(prev => [...prev, photo.uri]);
       setShowCamera(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      // Refresh GPS on first photo to stamp the actual pothole location
+      if (!locationRefreshedForPhotos.current) {
+        locationRefreshedForPhotos.current = true;
+        refreshGpsLocation(Location.Accuracy.High).catch(() => {});
+      }
     } catch (e) {
       Alert.alert('Error', 'Failed to take photo');
     }
@@ -146,9 +155,26 @@ export default function ReportInfrastructureScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
       quality: 0.8,
+      exif: true,
     });
     if (!result.canceled) {
       setPhotos(prev => [...prev, ...result.assets.map(a => a.uri)]);
+
+      // Try EXIF GPS from first selected image, fall back to device location
+      if (!locationRefreshedForPhotos.current && result.assets.length > 0) {
+        locationRefreshedForPhotos.current = true;
+        const exif = result.assets[0].exif;
+        if (exif?.GPSLatitude && exif?.GPSLongitude) {
+          const lat = exif.GPSLatitude;
+          const lng = exif.GPSLongitude;
+          setGpsLocation({ lat, lng });
+          Location.reverseGeocodeAsync({ latitude: lat, longitude: lng })
+            .then(([addr]) => { if (addr) setGpsAddress(addr); })
+            .catch(() => {});
+        } else {
+          refreshGpsLocation(Location.Accuracy.High).catch(() => {});
+        }
+      }
     }
   };
 
@@ -219,6 +245,7 @@ export default function ReportInfrastructureScreen() {
     setDescription('');
     setRoutingPreview(null);
     setCitySearch('');
+    locationRefreshedForPhotos.current = false;
     autoDetectLocation();
   };
 
