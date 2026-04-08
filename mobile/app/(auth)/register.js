@@ -24,8 +24,8 @@ export default function RegisterScreen() {
       Alert.alert('Password Mismatch', 'Passwords do not match.');
       return;
     }
-    if (form.password.length < 12) {
-      Alert.alert('Weak Password', 'Password must be at least 12 characters.');
+    if (form.password.length < 8) {
+      Alert.alert('Weak Password', 'Password must be at least 8 characters.');
       return;
     }
     if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/\d/.test(form.password)) {

@@ -39,8 +39,8 @@ export const register = async (req, res) => {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Validate password strength
-    if (password.length < 12) {
-      return res.status(400).json({ message: 'Password must be at least 12 characters' });
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters' });
     }
     if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
       return res.status(400).json({ message: 'Password must contain uppercase, lowercase, and a number' });
