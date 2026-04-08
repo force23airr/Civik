@@ -1,43 +1,6 @@
 import ParkingViolation from '../models/ParkingViolation.js';
-import PoliceStation from '../models/PoliceStation.js';
 import crypto from 'crypto';
 import fs from 'fs';
-
-/**
- * Find the nearest active police station to given coordinates
- */
-async function findNearestStation(lat, lng) {
-  const stations = await PoliceStation.find({ isActive: true, 'location.lat': { $exists: true } });
-
-  if (stations.length === 0) return null;
-
-  let nearest = null;
-  let minDistance = Infinity;
-
-  for (const station of stations) {
-    const dist = haversineDistance(lat, lng, station.location.lat, station.location.lng);
-    if (dist < minDistance) {
-      minDistance = dist;
-      nearest = station;
-    }
-  }
-
-  return { station: nearest, distanceKm: Math.round(minDistance * 100) / 100 };
-}
-
-/**
- * Haversine distance in km
- */
-function haversineDistance(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
 
 /**
  * Submit a parking violation report
@@ -110,9 +73,6 @@ export const submitParkingViolation = async (req, res) => {
       };
     }));
 
-    // Find nearest police station
-    const nearestResult = await findNearestStation(parsedLat, parsedLng);
-
     const violation = new ParkingViolation({
       reporter: req.user._id,
       violationType,
@@ -136,49 +96,23 @@ export const submitParkingViolation = async (req, res) => {
       },
       photos,
       observedAt: observedAt || new Date(),
-      assignedStation: nearestResult?.station?._id,
-      distanceToStation: nearestResult?.distanceKm,
       consent: {
         tosAccepted: true,
         certifyTruthful: true
       },
-      status: nearestResult?.station ? 'assigned' : 'submitted'
+      status: 'submitted'
     });
 
     // Add chain of custody entry
     violation.addCustodyEntry('created', req.user._id, 'Parking violation report submitted');
 
-    if (nearestResult?.station) {
-      violation.addCustodyEntry(
-        'submitted_to_station',
-        req.user._id,
-        `Auto-assigned to ${nearestResult.station.name} (${nearestResult.distanceKm} km away)`
-      );
-    }
-
     await violation.save();
-
-    // Emit real-time notification to police portal
-    if (req.io && nearestResult?.station) {
-      req.io.to(`station-${nearestResult.station._id}`).emit('new-parking-violation', {
-        reportNumber: violation.reportNumber,
-        violationType: violation.violationTypeDisplay,
-        location: violation.location.address
-      });
-    }
 
     res.status(201).json({
       success: true,
       violation,
       reportNumber: violation.reportNumber,
-      assignedStation: nearestResult?.station ? {
-        name: nearestResult.station.name,
-        distance: nearestResult.distanceKm,
-        jurisdiction: nearestResult.station.jurisdiction
-      } : null,
-      message: nearestResult?.station
-        ? `Report submitted and assigned to ${nearestResult.station.name}`
-        : 'Report submitted. Will be assigned to a station once available.'
+      message: 'Report submitted successfully'
     });
   } catch (error) {
     console.error('[ParkingViolation] Submit error:', error);
@@ -200,7 +134,6 @@ export const getMyReports = async (req, res) => {
     const safePage = Math.max(parseInt(page) || 1, 1);
 
     const reports = await ParkingViolation.find(query)
-      .populate('assignedStation', 'name jurisdiction address')
       .sort({ createdAt: -1 })
       .skip((safePage - 1) * safeLimit)
       .limit(safeLimit);
@@ -226,7 +159,6 @@ export const getReport = async (req, res) => {
   try {
     const report = await ParkingViolation.findById(req.params.id)
       .populate('reporter', 'username avatar')
-      .populate('assignedStation', 'name jurisdiction address')
       .populate('review.reviewedBy', 'username policeProfile.badgeNumber');
 
     if (!report) {
@@ -242,38 +174,6 @@ export const getReport = async (req, res) => {
     }
 
     res.json(report);
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred' });
-  }
-};
-
-/**
- * Get nearest police station for coordinates
- * GET /api/parking-violations/nearest-station?lat=X&lng=Y
- */
-export const getNearestStation = async (req, res) => {
-  try {
-    const { lat, lng } = req.query;
-    if (!lat || !lng) {
-      return res.status(400).json({ error: 'lat and lng are required' });
-    }
-
-    const result = await findNearestStation(parseFloat(lat), parseFloat(lng));
-
-    if (!result) {
-      return res.json({ station: null, message: 'No active stations found' });
-    }
-
-    res.json({
-      station: {
-        id: result.station._id,
-        name: result.station.name,
-        jurisdiction: result.station.jurisdiction,
-        address: result.station.address,
-        phone: result.station.phone,
-        distance: result.distanceKm
-      }
-    });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred' });
   }

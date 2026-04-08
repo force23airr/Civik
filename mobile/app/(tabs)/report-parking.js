@@ -46,7 +46,7 @@ export default function ReportParkingScreen() {
   // Location
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
-  const [nearestStation, setNearestStation] = useState(null);
+  const [geoData, setGeoData] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
 
   // Form
@@ -85,13 +85,9 @@ export default function ReportParkingScreen() {
       });
       if (geo) {
         setAddress(`${geo.streetNumber || ''} ${geo.street || ''}, ${geo.city || ''}, ${geo.region || ''} ${geo.postalCode || ''}`.trim());
+        setGeoData(geo);
       }
 
-      // Find nearest station
-      const stationRes = await client.get(`/parking-violations/nearest-station?lat=${loc.coords.latitude}&lng=${loc.coords.longitude}`);
-      if (stationRes.data.station) {
-        setNearestStation(stationRes.data.station);
-      }
     } catch (err) {
       if (__DEV__) console.log('Location error:', err.message);
     } finally {
@@ -165,9 +161,9 @@ export default function ReportParkingScreen() {
       formData.append('lat', location.lat.toString());
       formData.append('lng', location.lng.toString());
       formData.append('address', address);
-      if (nearestStation?.address?.city) formData.append('city', nearestStation.address.city);
-      if (nearestStation?.address?.state) formData.append('state', nearestStation.address.state);
-      if (nearestStation?.address?.zipCode) formData.append('zipCode', nearestStation.address.zipCode);
+      if (geoData?.city) formData.append('city', geoData.city);
+      if (geoData?.region) formData.append('state', geoData.region);
+      if (geoData?.postalCode) formData.append('zipCode', geoData.postalCode);
       if (licensePlate) formData.append('licensePlate', licensePlate.toUpperCase());
       if (color) formData.append('color', color);
       if (make) formData.append('make', make);
@@ -221,20 +217,11 @@ export default function ReportParkingScreen() {
           <Text style={styles.successTitle}>Report Submitted!</Text>
           <Text style={styles.successNumber}>{submitted.reportNumber}</Text>
 
-          {submitted.assignedStation && (
-            <View style={styles.successStation}>
-              <Ionicons name="business-outline" size={16} color="#93c5fd" />
-              <Text style={styles.successStationText}>
-                Sent to {submitted.assignedStation.name}
-              </Text>
-            </View>
-          )}
-
           <View style={styles.bountyCard}>
             <Ionicons name="cash-outline" size={24} color="#22c55e" />
             <Text style={styles.bountyCardTitle}>Potential Reward</Text>
             <Text style={styles.bountyCardText}>
-              You'll earn a bounty if the police approve your report!
+              You may earn a bounty when your report is verified!
             </Text>
           </View>
 
@@ -299,7 +286,7 @@ export default function ReportParkingScreen() {
                   <Ionicons name="location" size={14} color={location ? '#22c55e' : '#f59e0b'} />
                 )}
                 <Text style={styles.locationBadgeText} numberOfLines={1}>
-                  {location ? (nearestStation ? nearestStation.name : 'GPS found') : 'Getting location...'}
+                  {location ? 'GPS found' : 'Getting location...'}
                 </Text>
               </View>
               <TouchableOpacity
@@ -473,7 +460,7 @@ export default function ReportParkingScreen() {
 
           <View style={styles.skipNote}>
             <Ionicons name="information-circle-outline" size={16} color="#64748b" />
-            <Text style={styles.skipNoteText}>Vehicle info is optional but helps police take faster action.</Text>
+            <Text style={styles.skipNoteText}>Vehicle info is optional but helps verify the report.</Text>
           </View>
         </ScrollView>
 
@@ -519,12 +506,6 @@ export default function ReportParkingScreen() {
         <View style={styles.reviewSection}>
           <Text style={styles.reviewLabel}>LOCATION</Text>
           <Text style={styles.reviewValue}>{address || 'GPS coordinates attached'}</Text>
-          {nearestStation && (
-            <View style={styles.stationRow}>
-              <Ionicons name="business-outline" size={14} color="#93c5fd" />
-              <Text style={styles.stationName}>Sending to: {nearestStation.name}</Text>
-            </View>
-          )}
         </View>
 
         {/* Vehicle */}
@@ -541,7 +522,7 @@ export default function ReportParkingScreen() {
           <Ionicons name="cash-outline" size={20} color="#22c55e" />
           <View style={{ flex: 1, marginLeft: 10 }}>
             <Text style={styles.bountyPreviewTitle}>Potential Bounty: {selectedViolation?.bounty}</Text>
-            <Text style={styles.bountyPreviewSub}>Paid if police approve your report</Text>
+            <Text style={styles.bountyPreviewSub}>Paid when your report is verified</Text>
           </View>
         </View>
       </ScrollView>
@@ -755,8 +736,6 @@ const styles = StyleSheet.create({
   reviewValue: { color: '#e2e8f0', fontSize: 15, fontWeight: '500' },
   reviewValueSub: { color: '#94a3b8', fontSize: 13, marginTop: 2 },
   reviewThumb: { width: 70, height: 70, borderRadius: 8, marginRight: 8 },
-  stationRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  stationName: { color: '#93c5fd', fontSize: 13 },
   bountyPreview: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -831,8 +810,6 @@ const styles = StyleSheet.create({
   },
   successTitle: { color: '#fff', fontSize: 26, fontWeight: '800', marginBottom: 8 },
   successNumber: { color: '#3b82f6', fontSize: 18, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', fontWeight: '700', marginBottom: 16 },
-  successStation: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 24 },
-  successStationText: { color: '#93c5fd', fontSize: 14 },
   bountyCard: {
     backgroundColor: 'rgba(34,197,94,0.1)',
     borderWidth: 1,

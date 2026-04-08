@@ -26,7 +26,6 @@ function ReportParkingViolation() {
   // Location
   const [locationLoading, setLocationLoading] = useState(false);
   const [location, setLocation] = useState({ lat: null, lng: null, address: '', city: '', state: '', zipCode: '' });
-  const [nearestStation, setNearestStation] = useState(null);
 
   // Photos
   const [photos, setPhotos] = useState([]);
@@ -91,14 +90,6 @@ function ReportParkingViolation() {
           });
         } catch {
           setLocation(prev => ({ ...prev, lat: latitude, lng: longitude }));
-        }
-
-        // Find nearest station
-        try {
-          const stationRes = await api.get(`/parking-violations/nearest-station?lat=${latitude}&lng=${longitude}`);
-          setNearestStation(stationRes.data.station);
-        } catch {
-          // Station lookup failed, still allow submission
         }
 
         setLocationLoading(false);
@@ -203,14 +194,8 @@ function ReportParkingViolation() {
             <div className="success-icon">&#10003;</div>
             <h2>Report Submitted!</h2>
             <p className="report-number">{createdReport.reportNumber}</p>
-            {createdReport.assignedStation && (
-              <div className="station-info">
-                <p>Assigned to: <strong>{createdReport.assignedStation.name}</strong></p>
-                <p>{createdReport.assignedStation.distance} km away</p>
-              </div>
-            )}
             <div className="bounty-info">
-              <p>If approved by the police department, you'll earn a bounty reward in credits!</p>
+              <p>You may earn a bounty reward when your report is verified!</p>
               <p className="bounty-note">You'll be notified when a decision is made.</p>
             </div>
             <div className="success-actions">
@@ -255,7 +240,7 @@ function ReportParkingViolation() {
           {currentStep === 1 && (
             <div className="step-panel">
               <h2>Confirm Your Location</h2>
-              <p className="step-desc">We need your GPS location to route this report to the nearest police department.</p>
+              <p className="step-desc">We need your GPS location to attach accurate coordinates to your report.</p>
 
               {locationLoading ? (
                 <div className="location-loading">
@@ -269,14 +254,6 @@ function ReportParkingViolation() {
                     <p className="location-address">{location.address || `${location.lat}, ${location.lng}`}</p>
                     {location.city && <p className="location-city">{location.city}, {location.state} {location.zipCode}</p>}
                   </div>
-                  {nearestStation && (
-                    <div className="nearest-station">
-                      <h4>Nearest Police Department</h4>
-                      <p className="station-name">{nearestStation.name}</p>
-                      <p className="station-distance">{nearestStation.distance} km away</p>
-                      <p className="station-jurisdiction">{nearestStation.jurisdiction}</p>
-                    </div>
-                  )}
                   <button onClick={detectLocation} className="btn-outline">
                     Re-detect Location
                   </button>
@@ -372,7 +349,7 @@ function ReportParkingViolation() {
           {currentStep === 4 && (
             <div className="step-panel">
               <h2>Vehicle Information</h2>
-              <p className="step-desc">Provide as much detail as you can about the vehicle. License plate helps police take action faster.</p>
+              <p className="step-desc">Provide as much detail as you can about the vehicle. License plate helps verify the report.</p>
 
               <div className="form-row">
                 <div className="form-group">
@@ -460,7 +437,6 @@ function ReportParkingViolation() {
                 <div className="review-block">
                   <h4>Location</h4>
                   <p>{location.address || `${location.lat}, ${location.lng}`}</p>
-                  {nearestStation && <p className="review-station">Sending to: {nearestStation.name}</p>}
                 </div>
 
                 <div className="review-block">
@@ -489,7 +465,7 @@ function ReportParkingViolation() {
 
                 <div className="review-block bounty-preview">
                   <h4>Potential Bounty</h4>
-                  <p>If approved by police, you could earn credits for this report!</p>
+                  <p>When your report is verified, you could earn credits!</p>
                   <p className="bounty-amount">Bounties range from $1.00 - $7.50 depending on violation type</p>
                 </div>
               </div>
