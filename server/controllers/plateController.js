@@ -42,6 +42,13 @@ export const detectPlatesFromIncident = async (req, res) => {
 
       const filePath = path.resolve(file.path);
 
+      // Validate path is within uploads directory to prevent path traversal
+      const uploadsDir = path.resolve(process.cwd(), 'uploads');
+      if (!filePath.startsWith(uploadsDir)) {
+        console.warn(`[PlateDetection] Path traversal blocked: ${filePath}`);
+        continue;
+      }
+
       // Check if file exists
       if (!fs.existsSync(filePath)) {
         console.warn(`File not found: ${filePath}`);

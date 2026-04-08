@@ -28,6 +28,28 @@ export const createAlert = async (req, res) => {
   try {
     const { incidentId, message, radius, expiresIn } = req.body;
 
+    if (!incidentId) {
+      return res.status(400).json({ message: 'Incident ID is required' });
+    }
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ message: 'Alert message is required' });
+    }
+    if (message.length > 500) {
+      return res.status(400).json({ message: 'Alert message must be 500 characters or less' });
+    }
+    if (radius !== undefined) {
+      const parsedRadius = Number(radius);
+      if (isNaN(parsedRadius) || parsedRadius < 1 || parsedRadius > 100) {
+        return res.status(400).json({ message: 'Radius must be between 1 and 100 kilometers' });
+      }
+    }
+    if (expiresIn !== undefined) {
+      const parsedExpires = Number(expiresIn);
+      if (isNaN(parsedExpires) || parsedExpires < 1 || parsedExpires > 168) {
+        return res.status(400).json({ message: 'Expiration must be between 1 and 168 hours' });
+      }
+    }
+
     const expiresAt = expiresIn
       ? new Date(Date.now() + expiresIn * 60 * 60 * 1000) // hours to ms
       : new Date(Date.now() + 24 * 60 * 60 * 1000); // default 24 hours

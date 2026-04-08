@@ -218,7 +218,16 @@ export const updateIncident = async (req, res) => {
     if (description) updateFields.description = description;
     if (type) updateFields.type = type;
     if (severity) updateFields.severity = severity;
-    if (status) updateFields.status = status;
+    if (status) {
+      const allowedStatuses = ['pending', 'verified', 'resolved'];
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value' });
+      }
+      if (!['admin', 'moderator'].includes(req.user.role)) {
+        return res.status(403).json({ message: 'Only moderators and admins can change incident status' });
+      }
+      updateFields.status = status;
+    }
     if (location) {
       try {
         updateFields.location = typeof location === 'string' ? JSON.parse(location) : location;

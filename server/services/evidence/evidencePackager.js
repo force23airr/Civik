@@ -1,13 +1,13 @@
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
-import { execSync, exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import archiver from 'archiver';
 import PDFDocument from 'pdfkit';
 import { createWriteStream, createReadStream } from 'fs';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // Directory for exported evidence packages
 const EXPORTS_DIR = path.join(process.cwd(), 'exports');
@@ -43,8 +43,10 @@ export async function calculateFileHash(filePath) {
  */
 export async function extractVideoMetadata(filePath) {
   try {
-    const ffprobeCmd = `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}"`;
-    const { stdout } = await execAsync(ffprobeCmd, { encoding: 'utf-8' });
+    const { stdout } = await execFileAsync('ffprobe', [
+      '-v', 'quiet', '-print_format', 'json',
+      '-show_format', '-show_streams', filePath
+    ], { encoding: 'utf-8' });
     const data = JSON.parse(stdout);
 
     const videoStream = data.streams?.find(s => s.codec_type === 'video');
@@ -83,7 +85,7 @@ export async function extractVideoMetadata(filePath) {
 export async function extractExifData(filePath) {
   try {
     // Try using exiftool if available
-    const { stdout } = await execAsync(`exiftool -json "${filePath}"`, { encoding: 'utf-8' });
+    const { stdout } = await execFileAsync('exiftool', ['-json', filePath], { encoding: 'utf-8' });
     const data = JSON.parse(stdout)[0];
 
     return {
@@ -140,7 +142,10 @@ export async function extractKeyFrames(videoPath, outputDir, timestamps = []) {
   for (const ts of timestamps) {
     const outputPath = path.join(outputDir, `frame_${ts}s.jpg`);
     try {
-      await execAsync(`ffmpeg -ss ${ts} -i "${videoPath}" -vframes 1 -q:v 2 "${outputPath}" -y`);
+      await execFileAsync('ffmpeg', [
+        '-ss', String(ts), '-i', videoPath,
+        '-vframes', '1', '-q:v', '2', outputPath, '-y'
+      ]);
       frames.push({
         timestamp: ts,
         path: outputPath,
@@ -347,8 +352,13 @@ export async function createEvidenceZip(report, manifestPath) {
 
     // Add evidence files
     if (report.evidence && report.evidence.length > 0) {
+      const uploadsDir = path.resolve(process.cwd(), 'uploads');
       report.evidence.forEach(file => {
-        const filePath = path.join(process.cwd(), file.path);
+        const filePath = path.resolve(process.cwd(), file.path);
+        if (!filePath.startsWith(uploadsDir)) {
+          console.warn(`[EvidenceZip] Path traversal blocked: ${filePath}`);
+          return;
+        }
         try {
           archive.file(filePath, { name: `evidence/${file.originalFilename || file.filename}` });
         } catch (err) {

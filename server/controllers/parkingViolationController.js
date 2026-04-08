@@ -52,6 +52,44 @@ export const submitParkingViolation = async (req, res) => {
       observedAt
     } = req.body;
 
+    // Validate violationType against allowed enum
+    const allowedViolationTypes = [
+      'fire_hydrant', 'handicap_zone', 'no_parking_zone', 'double_parked',
+      'blocking_driveway', 'blocking_crosswalk', 'blocking_bike_lane', 'blocking_sidewalk',
+      'expired_meter', 'overnight_parking', 'street_cleaning', 'fire_lane',
+      'bus_stop', 'loading_zone', 'red_curb', 'yellow_curb',
+      'too_close_to_intersection', 'wrong_direction', 'abandoned_vehicle', 'other'
+    ];
+    if (!violationType || !allowedViolationTypes.includes(violationType)) {
+      return res.status(400).json({ error: 'Invalid violation type' });
+    }
+
+    // Validate coordinates
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    if (isNaN(parsedLat) || parsedLat < -90 || parsedLat > 90) {
+      return res.status(400).json({ error: 'Latitude must be between -90 and 90' });
+    }
+    if (isNaN(parsedLng) || parsedLng < -180 || parsedLng > 180) {
+      return res.status(400).json({ error: 'Longitude must be between -180 and 180' });
+    }
+
+    // Validate license plate format
+    if (licensePlate && (typeof licensePlate !== 'string' || licensePlate.length < 2 || licensePlate.length > 10)) {
+      return res.status(400).json({ error: 'License plate must be between 2 and 10 characters' });
+    }
+
+    // Validate observedAt date
+    if (observedAt) {
+      const parsedDate = new Date(observedAt);
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({ error: 'Invalid observedAt date' });
+      }
+      if (parsedDate > new Date()) {
+        return res.status(400).json({ error: 'observedAt cannot be in the future' });
+      }
+    }
+
     // Require at least one photo
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'At least one photo is required' });
@@ -73,7 +111,7 @@ export const submitParkingViolation = async (req, res) => {
     }));
 
     // Find nearest police station
-    const nearestResult = await findNearestStation(parseFloat(lat), parseFloat(lng));
+    const nearestResult = await findNearestStation(parsedLat, parsedLng);
 
     const violation = new ParkingViolation({
       reporter: req.user._id,
@@ -85,8 +123,8 @@ export const submitParkingViolation = async (req, res) => {
         city,
         state,
         zipCode,
-        lat: parseFloat(lat),
-        lng: parseFloat(lng)
+        lat: parsedLat,
+        lng: parsedLng
       },
       vehicle: {
         licensePlate,

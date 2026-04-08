@@ -748,9 +748,21 @@ export const submitToInsurance = async (req, res) => {
 // @access  Private
 export const createWitnessReportEndpoint = async (req, res) => {
   try {
+    const {
+      incidentType, severity, description,
+      otherPartyPlate, otherPartyState, otherPartyVehicle,
+      location, incidentAddress, incidentDate,
+      reporterWasInvolved, reporterDamage, estimatedDamage,
+      authorizePoliceContact, willingToTestify
+    } = req.body;
+
     const violationReport = await createWitnessReport(
       {
-        ...req.body,
+        incidentType, severity, description,
+        otherPartyPlate, otherPartyState, otherPartyVehicle,
+        location, incidentAddress, incidentDate,
+        reporterWasInvolved, reporterDamage, estimatedDamage,
+        authorizePoliceContact, willingToTestify,
         ipAddress: req.ip,
         userAgent: req.headers['user-agent']
       },

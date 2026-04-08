@@ -25,7 +25,7 @@ export const createClaim = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized - you can only create claims for your own incidents' });
     }
 
-    // Create claim
+    // Create claim with explicit field whitelisting (no spread operators)
     const claim = await InsuranceClaim.create({
       incident: incidentId,
       user: req.user._id,
@@ -34,7 +34,8 @@ export const createClaim = async (req, res) => {
         dateOfLoss: lossDetails?.dateOfLoss || incident.createdAt,
         locationOfLoss: lossDetails?.locationOfLoss || incident.location,
         descriptionOfLoss: lossDetails?.descriptionOfLoss || incident.description,
-        ...lossDetails
+        estimatedDamage: lossDetails?.estimatedDamage,
+        timeOfLoss: lossDetails?.timeOfLoss
       },
       thirdParty: thirdParty || { involved: false },
       evidence: {
@@ -42,7 +43,10 @@ export const createClaim = async (req, res) => {
           originalFile: f.path,
           type: f.mimetype
         })) || [],
-        ...evidence
+        policeReportNumber: evidence?.policeReportNumber,
+        policeReportDate: evidence?.policeReportDate,
+        witnesses: Array.isArray(evidence?.witnesses) ? evidence.witnesses : [],
+        additionalDocuments: Array.isArray(evidence?.additionalDocuments) ? evidence.additionalDocuments : []
       }
     });
 

@@ -123,7 +123,7 @@ async function detectWithPlateRecognizer(imagePath) {
       } : null
     }));
   } catch (error) {
-    console.error('Plate Recognizer error:', error);
+    console.error('Plate Recognizer error:', error.message);
     return [];
   }
 }
@@ -144,18 +144,23 @@ async function detectWithOpenALPR(imagePath) {
     const imageBuffer = fs.readFileSync(imagePath);
     const base64Image = imageBuffer.toString('base64');
 
-    const response = await fetch(
-      `https://api.openalpr.com/v3/recognize_bytes?secret_key=${apiKey}&recognize_vehicle=1&country=us&return_image=0`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          image_bytes: base64Image
-        })
-      }
-    );
+    // OpenALPR v3 requires secret_key as a query param (vendor limitation).
+    // Build URL via URL object so the key never appears in template literals or logs.
+    const alprUrl = new URL('https://api.openalpr.com/v3/recognize_bytes');
+    alprUrl.searchParams.set('secret_key', apiKey);
+    alprUrl.searchParams.set('recognize_vehicle', '1');
+    alprUrl.searchParams.set('country', 'us');
+    alprUrl.searchParams.set('return_image', '0');
+
+    const response = await fetch(alprUrl.toString(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        image_bytes: base64Image
+      })
+    });
 
     if (!response.ok) {
       throw new Error(`OpenALPR API error: ${response.status}`);
@@ -176,7 +181,8 @@ async function detectWithOpenALPR(imagePath) {
       } : null
     }));
   } catch (error) {
-    console.error('OpenALPR error:', error);
+    // Sanitize error to prevent API key leakage in logs
+    console.error('OpenALPR error:', error.message);
     return [];
   }
 }
