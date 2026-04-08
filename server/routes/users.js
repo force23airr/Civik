@@ -10,7 +10,7 @@ router.get('/', admin, listUsers);
 router.put('/:id/role', admin, updateUserRole);
 
 // Public / auth routes
-router.get('/:id', getUserById);
+router.get('/:id', auth, getUserById);
 router.put('/:id', auth, updateUser);
 
 export default router;

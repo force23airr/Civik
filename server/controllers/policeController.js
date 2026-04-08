@@ -109,7 +109,8 @@ export const getNearbyStations = async (req, res) => {
 // @access  Admin
 export const createPoliceStation = async (req, res) => {
   try {
-    const station = await PoliceStation.create(req.body);
+    const { name, address, jurisdiction, phone, email, website, coordinates } = req.body;
+    const station = await PoliceStation.create({ name, address, jurisdiction, phone, email, website, coordinates });
     res.status(201).json(station);
   } catch (error) {
     res.status(400).json({ message: 'Invalid request' });
@@ -121,9 +122,10 @@ export const createPoliceStation = async (req, res) => {
 // @access  Admin
 export const updatePoliceStation = async (req, res) => {
   try {
+    const { name, address, jurisdiction, phone, email, website, coordinates } = req.body;
     const station = await PoliceStation.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { name, address, jurisdiction, phone, email, website, coordinates },
       { new: true, runValidators: true }
     );
 

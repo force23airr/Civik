@@ -170,7 +170,7 @@ export const requestPayout = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to process payout request' });
   }
 };
 
@@ -196,7 +196,7 @@ export const updatePaymentMethod = async (req, res) => {
 
     res.json({ message: 'Payment method updated' });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to update payment method' });
   }
 };
 
@@ -446,7 +446,7 @@ export const updateProfile = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to update profile' });
   }
 };
 

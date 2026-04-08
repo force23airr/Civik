@@ -18,9 +18,16 @@ const router = express.Router();
 // Protected routes require authentication
 router.use(auth);
 
-// Flagged plates and stats require auth
-router.get('/flagged', getFlaggedPlates);
-router.get('/stats', getPlateStats);
+const requireAdminOrPolice = (req, res, next) => {
+  if (!['admin', 'police_officer'].includes(req.user.role)) {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+  next();
+};
+
+// Flagged plates and stats restricted to admin/police
+router.get('/flagged', requireAdminOrPolice, getFlaggedPlates);
+router.get('/stats', requireAdminOrPolice, getPlateStats);
 
 // Detect plates from incident media files
 router.post('/detect/:incidentId', detectPlatesFromIncident);

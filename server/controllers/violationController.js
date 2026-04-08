@@ -122,7 +122,7 @@ export const createViolationReport = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      violationReport,
+      violationReport: sanitizeViolation(violationReport, req.user),
       message: 'Violation report created successfully'
     });
   } catch (error) {
@@ -346,7 +346,7 @@ export const updateViolationReport = async (req, res) => {
 
     res.json({
       success: true,
-      violation,
+      violation: sanitizeViolation(violation, req.user),
       message: 'Violation report updated successfully'
     });
   } catch (error) {
@@ -690,6 +690,13 @@ export const getPoliceSubmissionStatus = async (req, res) => {
       return res.status(404).json({ message: 'Violation report not found' });
     }
 
+    // Only the report owner or privileged roles can view police submission data
+    const isOwner = req.user._id.toString() === violation.reporter.toString();
+    const isPrivileged = ['admin', 'police_officer'].includes(req.user.role);
+    if (!isOwner && !isPrivileged) {
+      return res.status(403).json({ message: 'Not authorized to view this data' });
+    }
+
     res.json({
       submissions: violation.lawEnforcementSubmissions
     });
@@ -752,7 +759,7 @@ export const createWitnessReportEndpoint = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      violationReport,
+      violationReport: sanitizeViolation(violationReport, req.user),
       message: 'Witness report created successfully'
     });
   } catch (error) {

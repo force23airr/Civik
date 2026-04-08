@@ -8,6 +8,7 @@ import {
 } from '../controllers/parkingViolationController.js';
 import auth from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
+import { uploadLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -18,6 +19,6 @@ router.get('/options/types', getViolationTypes);
 router.get('/nearest-station', auth, getNearestStation);
 router.get('/my-reports', auth, getMyReports);
 router.get('/:id', auth, getReport);
-router.post('/', auth, upload.array('photos', 5), submitParkingViolation);
+router.post('/', auth, uploadLimiter, upload.array('photos', 5), submitParkingViolation);
 
 export default router;

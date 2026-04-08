@@ -179,7 +179,6 @@ exportJobSchema.methods.fail = async function(error) {
   this.completedAt = new Date();
   this.error = {
     message: error.message,
-    stack: error.stack,
     code: error.code
   };
   await this.save();

@@ -53,7 +53,7 @@ export const register = async (req, res) => {
 
     if (existingUser) {
       return res.status(400).json({
-        message: existingUser.email === normalizedEmail ? 'Email already registered' : 'Username taken'
+        message: 'An account with this email or username already exists'
       });
     }
 

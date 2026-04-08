@@ -224,7 +224,7 @@ export const createExportJob = async (req, res) => {
       checkUrl: `/api/analytics/export/${job.jobId}`
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to create export job' });
   }
 };
 

@@ -32,8 +32,15 @@ import adminRoutes from './routes/admin.js';
 import InsurancePartner from './models/InsurancePartner.js';
 import DataPartner from './models/DataPartner.js';
 import MunicipalDepartment from './models/MunicipalDepartment.js';
+import { generalLimiter } from './middleware/rateLimit.js';
 
 dotenv.config();
+
+// Validate critical secrets at startup
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error('FATAL: JWT_SECRET must be set and at least 32 characters');
+  process.exit(1);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,7 +49,7 @@ const allowedOrigins = Array.from(new Set([
     ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
     : []),
   process.env.APP_URL,
-  'http://localhost:5173',
+  ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5173'] : []),
   'https://civik.onrender.com'
 ].filter(Boolean)));
 
@@ -110,7 +117,7 @@ app.use('/uploads', async (req, res, next) => {
     const headerToken = req.headers.authorization?.startsWith('Bearer ')
       ? req.headers.authorization.split(' ')[1]
       : null;
-    const token = cookieToken || headerToken || req.query.token;
+    const token = cookieToken || headerToken;
     if (!token) return res.status(401).json({ message: 'Authentication required' });
     const jwt = await import('jsonwebtoken');
     jwt.default.verify(token, process.env.JWT_SECRET);
@@ -136,6 +143,9 @@ app.use((req, res, next) => {
 });
 
 // Reports and exports served through authenticated routes only (not public static)
+
+// Global rate limiter for all API routes
+app.use('/api', generalLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
