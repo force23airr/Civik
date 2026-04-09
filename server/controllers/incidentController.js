@@ -8,6 +8,7 @@ import {
 } from '../services/plateRecognition/plateDetector.js';
 import { awardIncidentCredits } from '../services/rewards/rewardService.js';
 import { routeIncident } from '../services/municipal/routingService.js';
+import { getEnrichmentQueue } from '../queues/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -173,22 +174,31 @@ export const createIncident = async (req, res) => {
 
     await incident.populate('user', 'username avatar');
 
-    // Trigger plate detection asynchronously (don't await - runs in background)
-    if (mediaFiles.length > 0) {
-      processPlateDetection(incident).catch(err =>
-        console.error('[PlateDetection] Background processing error:', err)
+    // Dispatch enrichment jobs via Bull queue (persistent, retryable)
+    const enrichmentQueue = getEnrichmentQueue();
+    if (enrichmentQueue) {
+      if (mediaFiles.length > 0) {
+        enrichmentQueue.add('plate-detection', { incidentId: incident._id.toString() });
+      }
+      enrichmentQueue.add('award-credits', {
+        incidentId: incident._id.toString(),
+        userId: req.user._id.toString()
+      });
+      enrichmentQueue.add('route-municipal', { incidentId: incident._id.toString() });
+    } else {
+      // Fallback to fire-and-forget if Redis/Bull unavailable
+      if (mediaFiles.length > 0) {
+        processPlateDetection(incident).catch(err =>
+          console.error('[PlateDetection] Background processing error:', err)
+        );
+      }
+      awardIncidentCredits(incident, req.user._id).catch(err =>
+        console.error('[Rewards] Error awarding incident credits:', err)
+      );
+      routeIncident(incident).catch(err =>
+        console.error('[Municipal] Routing error:', err.message)
       );
     }
-
-    // Award credits for incident creation (runs in background)
-    awardIncidentCredits(incident, req.user._id).catch(err =>
-      console.error('[Rewards] Error awarding incident credits:', err)
-    );
-
-    // Auto-route infrastructure/weather/traffic incidents to municipal departments
-    routeIncident(incident).catch(err =>
-      console.error('[Municipal] Routing error:', err.message)
-    );
 
     res.status(201).json(incident);
   } catch (error) {

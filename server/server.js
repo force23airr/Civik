@@ -33,6 +33,7 @@ import InsurancePartner from './models/InsurancePartner.js';
 import DataPartner from './models/DataPartner.js';
 import MunicipalDepartment from './models/MunicipalDepartment.js';
 import { generalLimiter } from './middleware/rateLimit.js';
+import { initQueues } from './queues/index.js';
 
 dotenv.config();
 
@@ -210,6 +211,14 @@ const PORT = process.env.PORT || 5000;
 
 httpServer.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Initialize Bull queues (requires Redis — graceful fallback if unavailable)
+  try {
+    await initQueues();
+  } catch (error) {
+    console.warn('[Queues] Failed to initialize Bull queues (Redis may be unavailable):', error.message);
+    console.warn('[Queues] Falling back to fire-and-forget async processing');
+  }
 
   // Seed default partners on startup
   try {

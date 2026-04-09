@@ -207,7 +207,51 @@ const incidentSchema = new mongoose.Schema({
     submittedAt: { type: Date, default: Date.now },
     status: { type: String, default: 'submitted' },
     ticketNumber: String
-  }]
+  }],
+
+  // Traffic conditions at incident time (from HERE Traffic API)
+  trafficData: {
+    fetchedAt: Date,
+    flow: {
+      currentSpeed: Number,
+      freeFlowSpeed: Number,
+      jamFactor: Number,
+      confidence: Number
+    },
+    nearbyIncidents: [{
+      type: String,
+      description: String,
+      distanceMeters: Number,
+      severity: String
+    }]
+  },
+
+  // Weather conditions at incident time (from Azure Maps Weather API)
+  weatherData: {
+    fetchedAt: Date,
+    conditions: {
+      description: String,
+      temperature: Number,
+      humidity: Number,
+      windSpeed: Number,
+      visibility: Number,
+      precipitation: Boolean,
+      precipitationType: String,
+      uvIndex: Number
+    },
+    hazards: [{
+      type: String,
+      severity: String
+    }]
+  },
+
+  // Enrichment pipeline status tracking
+  enrichment: {
+    plateDetection: { status: String, completedAt: Date, error: String },
+    traffic: { status: String, completedAt: Date, error: String },
+    weather: { status: String, completedAt: Date, error: String },
+    scoring: { status: String, completedAt: Date, error: String }
+  }
 }, {
   timestamps: true
 });
